@@ -1,1 +1,0 @@
-timestamp,symbol,side,quantity,entry_price,exit_price,invested_amount,current_value,pnl,commission,ai_score,run_type,run_count,run_perc,gauss_run,vol_ratio,deviso_ratio,stop_loss,take_profit,close_reason,status
