@@ -1,0 +1,40 @@
+2025-09-05 18:40:49,656 - INFO - CSV dosyaları hazırlandı
+2025-09-05 18:40:49,658 - INFO - Başlangıçta 0 emtia yüklü
+2025-09-05 18:40:50,106 - INFO - CSV dosyaları hazırlandı
+2025-09-05 18:40:50,107 - INFO - Başlangıçta 0 emtia yüklü
+2025-09-05 18:40:53,307 - INFO - Change VP API isteği: Sembol=BTCUSDT (BINANCE), Periyot=1h, Süre=7, TW Modu=True
+2025-09-05 18:40:53,968 - INFO - Binance: 484 USDT vadeli sembolü bulundu
+2025-09-05 18:40:53,969 - INFO - BİST: 143 popüler sembol yüklendi
+2025-09-05 18:40:53,973 - INFO - US Stocks: 157 popüler hisse yüklendi
+2025-09-05 18:40:53,973 - INFO - Toplam sembol: 784 (Binance: 484, BİST: 143, US: 157)
+2025-09-05 18:40:55,114 - INFO - Binance: 484 USDT vadeli sembolü bulundu
+2025-09-05 18:40:55,116 - INFO - BİST: 143 popüler sembol yüklendi
+2025-09-05 18:40:55,117 - INFO - US Stocks: 157 popüler hisse yüklendi
+2025-09-05 18:40:55,117 - INFO - Toplam sembol: 784 (Binance: 484, BİST: 143, US: 157)
+2025-09-05 18:41:12,816 - INFO - Change VP API isteği: Sembol=MUSDT (BINANCE), Periyot=1h, Süre=7, TW Modu=True
+2025-09-05 18:41:43,311 - INFO - Change VP API isteği: Sembol=MUSDT (BINANCE), Periyot=1h, Süre=7, TW Modu=True
+2025-09-05 18:42:13,340 - INFO - Change VP API isteği: Sembol=MUSDT (BINANCE), Periyot=1h, Süre=7, TW Modu=True
+2025-09-05 18:42:36,323 - INFO - Change VP API isteği: Sembol=AIOTUSDT (BINANCE), Periyot=1h, Süre=7, TW Modu=True
+2025-09-05 18:43:06,793 - INFO - Change VP API isteği: Sembol=TAUSDT (BINANCE), Periyot=1h, Süre=7, TW Modu=True
+2025-09-05 18:43:10,854 - INFO - Change VP API isteği: Sembol=TAUSDT (BINANCE), Periyot=1h, Süre=7, TW Modu=True
+2025-09-05 18:43:11,520 - INFO - Change VP API isteği: Sembol=TAUSDT (BINANCE), Periyot=1h, Süre=7, TW Modu=True
+2025-09-05 18:43:41,551 - INFO - Change VP API isteği: Sembol=TAUSDT (BINANCE), Periyot=1h, Süre=7, TW Modu=True
+2025-09-05 18:44:00,120 - INFO - Change VP API isteği: Sembol=ETHUSDT (BINANCE), Periyot=1h, Süre=7, TW Modu=True
+2025-09-05 18:44:30,581 - INFO - Change VP API isteği: Sembol=ETHUSDT (BINANCE), Periyot=1h, Süre=7, TW Modu=True
+2025-09-05 18:45:00,619 - INFO - Change VP API isteği: Sembol=ETHUSDT (BINANCE), Periyot=1h, Süre=7, TW Modu=True
+2025-09-05 18:45:30,656 - INFO - Change VP API isteği: Sembol=ETHUSDT (BINANCE), Periyot=1h, Süre=7, TW Modu=True
+2025-09-05 18:45:51,823 - INFO - Change VP API isteği: Sembol=MUSDT (BINANCE), Periyot=1h, Süre=7, TW Modu=True
+2025-09-05 18:46:02,047 - INFO - CSV dosyaları hazırlandı
+2025-09-05 18:46:02,048 - INFO - Başlangıçta 0 emtia yüklü
+2025-09-05 18:46:02,496 - INFO - CSV dosyaları hazırlandı
+2025-09-05 18:46:02,497 - INFO - Başlangıçta 0 emtia yüklü
+2025-09-05 18:46:04,556 - INFO - Change VP API isteği: Sembol=BTCUSDT (BINANCE), Periyot=1h, Süre=7, TW Modu=True
+2025-09-05 18:46:05,231 - INFO - Binance: 484 USDT vadeli sembolü bulundu
+2025-09-05 18:46:05,232 - INFO - BİST: 143 popüler sembol yüklendi
+2025-09-05 18:46:05,235 - INFO - US Stocks: 157 popüler hisse yüklendi
+2025-09-05 18:46:05,236 - INFO - Toplam sembol: 784 (Binance: 484, BİST: 143, US: 157)
+2025-09-05 18:46:11,856 - INFO - Change VP API isteği: Sembol=MUSDT (BINANCE), Periyot=1h, Süre=7, TW Modu=True
+2025-09-05 18:46:45,421 - INFO - Change VP API isteği: Sembol=MUSDT (BINANCE), Periyot=1h, Süre=7, TW Modu=True
+2025-09-05 18:47:15,458 - INFO - Change VP API isteği: Sembol=MUSDT (BINANCE), Periyot=1h, Süre=7, TW Modu=True
+2025-09-05 18:47:26,273 - INFO - Change VP API isteği: Sembol=MUSDT (BINANCE), Periyot=1h, Süre=7, TW Modu=True
+2025-09-05 18:47:34,157 - INFO - Change VP API isteği: Sembol=MUSDT (BINANCE), Periyot=1h, Süre=7, TW Modu=True
