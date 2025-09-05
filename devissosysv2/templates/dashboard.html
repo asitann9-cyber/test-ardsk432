@@ -1,0 +1,2917 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deviso System Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f8f9fa;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .dashboard-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar Styles */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar-header {
+            padding: 30px 20px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+        
+        .sidebar-header h3 {
+            margin: 0 0 5px 0;
+            font-size: 1.5em;
+            font-weight: 700;
+        }
+        
+        .sidebar-header p {
+            margin: 0;
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+        
+        .sidebar-nav {
+            flex: 1;
+            padding: 20px 0;
+        }
+        
+        .nav-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .nav-item {
+            margin: 5px 0;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-left-color: #3498db;
+        }
+        
+        .nav-link.active {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border-left-color: #3498db;
+        }
+        
+        .nav-link i {
+            width: 20px;
+            margin-right: 15px;
+            font-size: 1.1em;
+        }
+        
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            font-size: 0.9em;
+        }
+        
+        .status-indicator i {
+            margin-right: 8px;
+            font-size: 0.8em;
+        }
+        
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #f8f9fa;
+        }
+        
+        .top-nav {
+            background: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .nav-left {
+            display: flex;
+            align-items: center;
+        }
+        
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            font-size: 1.2em;
+            color: #2c3e50;
+            margin-right: 20px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-toggle:hover {
+            background: #f8f9fa;
+        }
+        
+        .nav-right {
+            display: flex;
+            align-items: center;
+        }
+        
+        .nav-right .nav-item {
+            display: flex;
+            align-items: center;
+            color: #6c757d;
+        }
+        
+        .nav-right .nav-item i {
+            margin-right: 8px;
+        }
+        
+        .content-area {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        
+        .page-content {
+            display: none;
+        }
+        
+        .page-content.active {
+            display: block;
+        }
+        
+        .dashboard-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+        
+        .status-card {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .control-panel {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .btn-scan {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-scan:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3);
+        }
+        
+        .btn-scan:disabled {
+            background: #6c757d;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .results-table {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .table {
+            margin-bottom: 0;
+        }
+        
+        .table thead th {
+            background: linear-gradient(45deg, #2c3e50, #34495e);
+            color: white;
+            border: none;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .table tbody tr:hover {
+            background-color: #f8f9fa;
+            transform: scale(1.01);
+            transition: all 0.2s ease;
+        }
+        
+        .positive-ratio {
+            color: #28a745;
+            font-weight: 600;
+        }
+        
+        .negative-ratio {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        
+        .loading-spinner {
+            display: none;
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stats-number {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .stats-label {
+            color: #7f8c8d;
+            font-size: 1.1em;
+            margin-top: 5px;
+        }
+        
+        .module-badges {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        
+        .module-badge {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                top: 0;
+                height: 100vh;
+                z-index: 1000;
+                transition: left 0.3s ease;
+            }
+            
+            .sidebar.collapsed {
+                left: 0;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .content-area {
+                padding: 15px;
+            }
+            
+            .dashboard-container {
+                padding: 20px;
+            }
+            
+            .top-nav {
+                padding: 10px 15px;
+            }
+            
+            .nav-link span {
+                display: none;
+            }
+            
+            .sidebar-header h3 {
+                font-size: 1.2em;
+            }
+        }
+        
+        /* Card Styles for Settings */
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            border: none;
+            padding: 15px 20px;
+        }
+        
+        .card-header h5 {
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h3><i class="fas fa-chart-line"></i> Deviso System</h3>
+                <p>Dashboard</p>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link active" data-module="dashboard" onclick="showModule('dashboard')">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Ana Sayfa</span>
+                        </a>
+                    </li>
+                                         <li class="nav-item">
+                         <a href="#" class="nav-link" data-module="ema" onclick="showModule('ema')">
+                             <i class="fas fa-chart-line"></i>
+                             <span>Deviso Ema Scanner</span>
+                         </a>
+                     </li>
+                     <li class="nav-item">
+                         <a href="#" class="nav-link" data-module="rsi_macd" onclick="showModule('rsi_macd')">
+                             <i class="fas fa-signal"></i>
+                             <span>Deviso R/M Scanner</span>
+                         </a>
+                     </li>
+                     <li class="nav-item">
+                         <a href="#" class="nav-link" data-module="super_signal" onclick="showModule('super_signal')">
+                             <i class="fas fa-rocket"></i>
+                             <span>Deviso Super Signal</span>
+                         </a>
+                     </li>
+                     <li class="nav-item">
+                         <a href="#" class="nav-link" data-module="pro_signal" onclick="showModule('pro_signal')">
+                             <i class="fas fa-crown"></i>
+                             <span>Deviso Pro Signal</span>
+                         </a>
+                     </li>
+                     <li class="nav-item">
+                         <a href="#" class="nav-link" data-module="live_test" onclick="showModule('live_test')">
+                             <i class="fas fa-flask"></i>
+                             <span>Deviso Live Test</span>
+                         </a>
+                     </li>
+                     <li class="nav-item">
+                         <a href="#" class="nav-link" data-module="live_trading" onclick="showModule('live_trading')">
+                             <i class="fas fa-chart-line"></i>
+                             <span>Live Trading</span>
+                         </a>
+                     </li>
+                     <li class="nav-item">
+                        <a href="#" class="nav-link" data-module="settings" onclick="showModule('settings')">
+                            <i class="fas fa-cog"></i>
+                            <span>Ayarlar</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="system-status">
+                    <div class="status-indicator" id="systemStatus">
+                        <i class="fas fa-circle text-success"></i>
+                        <span>Sistem Aktif</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Navigation -->
+            <div class="top-nav">
+                <div class="nav-left">
+                    <button class="sidebar-toggle" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2 id="pageTitle">Ana Sayfa</h2>
+                </div>
+                <div class="nav-right">
+                    <div class="nav-item">
+                        <i class="fas fa-clock"></i>
+                        <span id="currentTime">-</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Dashboard Page -->
+                <div class="page-content active" id="dashboard-page">
+                    <div class="dashboard-container">
+                        <div class="text-center" style="padding: 100px 0;">
+                            <h1 style="font-size: 4em; color: #2c3e50; margin-bottom: 20px;">
+                                <i class="fas fa-chart-line"></i> Deviso System
+                            </h1>
+                            <p style="font-size: 1.5em; color: #7f8c8d;">
+                                Binance Futures Coin Scanner & Analytics Platform
+                            </p>
+                            <div style="margin-top: 40px;">
+                                                                 <div class="module-badges">
+                                     <span class="module-badge">Modül 1: Deviso Ema Scanner</span>
+                                     <span class="module-badge">Modül 2: Deviso R/M Scanner</span>
+                                     <span class="module-badge">Modül 3: Deviso Super Signal</span>
+                                     <span class="module-badge">Modül 4: Deviso Pro Signal</span>
+                                     <span class="module-badge">Modül 5: Deviso Live Test</span>
+                                     <span class="module-badge">Modül 6: Live Trading</span>
+                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        
+        <!-- EMA200 Scanner Page -->
+        <div class="page-content" id="ema-page">
+            <div class="dashboard-container">
+                <div class="header">
+                    <h1><i class="fas fa-chart-line"></i> EMA200 Scanner</h1>
+                    <p>Binance Futures EMA200 Crossover Scanner</p>
+                </div>
+                
+                <!-- Control Panel -->
+                <div class="control-panel">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-cogs"></i> Kontrol Paneli</h5>
+                            <p class="text-muted mb-0">EMA200 stratejisi ile coin tarama</p>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="emaMaxCoins" class="form-label">Maksimum Coin</label>
+                            <select class="form-select" id="emaMaxCoins">
+                                <option value="50">50 Coin</option>
+                                <option value="100">100 Coin</option>
+                                <option value="200">200 Coin</option>
+                                <option value="480" selected>TÜM COİNLER (480)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="emaTimeframe" class="form-label">Timeframe</label>
+                            <select class="form-select" id="emaTimeframe">
+                                <option value="5m" selected>5 Dakika</option>
+                                <option value="15m">15 Dakika</option>
+                                <option value="1h">1 Saat</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-scan btn-lg w-100" id="emaScanBtn" onclick="startEmaScan()">
+                                <i class="fas fa-search"></i> Taramayı Başlat
+                            </button>
+                            <div class="loading-spinner text-center mt-2" id="emaLoadingSpinner">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Taranıyor...</span>
+                                </div>
+                                <p class="mt-2">Coinler taranıyor...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Results Table -->
+                <div class="results-table">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-trophy"></i> Sıra</th>
+                                    <th><i class="fas fa-coins"></i> Coin</th>
+                                    <th><i class="fas fa-signal"></i> Sinyal</th>
+                                    <th><i class="fas fa-star"></i> Toplam Skor</th>
+                                    <th><i class="fas fa-chart-line"></i> Momentum</th>
+                                    <th><i class="fas fa-volume-up"></i> Hacim</th>
+                                    <th><i class="fas fa-chart-bar"></i> Volatilite</th>
+                                    <th><i class="fas fa-bullseye"></i> EMA Kalitesi</th>
+                                    <th><i class="fas fa-percentage"></i> Ratio %</th>
+                                    <th><i class="fas fa-chart-line"></i> Fiyat Değişimi %</th>
+                                    <th><i class="fas fa-dollar-sign"></i> Mevcut Fiyat</th>
+                                    <th><i class="fas fa-info-circle"></i> Detaylar</th>
+                                </tr>
+                            </thead>
+                            <tbody id="emaResultsTable">
+                                <tr>
+                                    <td colspan="12" class="text-center text-muted py-4">
+                                        <i class="fas fa-info-circle"></i> Henüz tarama yapılmadı
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Footer -->
+                <div class="text-center mt-4">
+                    <p class="text-muted">
+                        <i class="fas fa-info-circle"></i> 
+                        <strong>Koşul:</strong> Ratio >= 0 (Yeşil line - Pullback seviyesinin üstünde)
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- RSI/MACD Scanner Page -->
+        <div class="page-content" id="rsi_macd-page">
+            <div class="dashboard-container">
+                <div class="header">
+                    <h1><i class="fas fa-signal"></i> RSI/MACD Scanner</h1>
+                    <p>Binance Futures RSI & MACD Signal Scanner</p>
+                </div>
+                
+                <!-- Control Panel -->
+                <div class="control-panel">
+                    <div class="row align-items-center">
+                        <div class="col-md-4">
+                            <h5><i class="fas fa-cogs"></i> Kontrol Paneli</h5>
+                            <p class="text-muted mb-0">RSI ve MACD sinyalleri ile tarama</p>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="rsiMaxCoins" class="form-label">Maksimum Coin</label>
+                            <select class="form-select" id="rsiMaxCoins">
+                                <option value="50">50 Coin</option>
+                                <option value="100">100 Coin</option>
+                                <option value="200">200 Coin</option>
+                                <option value="480" selected>TÜM COİNLER (480)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="rsiTimeframe" class="form-label">Timeframe</label>
+                                                         <select class="form-select" id="rsiTimeframe">
+                                 <option value="5m" selected>5 Dakika</option>
+                                 <option value="15m">15 Dakika</option>
+                                 <option value="1h">1 Saat</option>
+                             </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-scan btn-lg w-100" id="rsiScanBtn" onclick="startRsiScan()">
+                                <i class="fas fa-search"></i> Taramayı Başlat
+                            </button>
+                            <div class="loading-spinner text-center mt-2" id="rsiLoadingSpinner">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Taranıyor...</span>
+                                </div>
+                                <p class="mt-2">Coinler taranıyor...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Results Table -->
+                <div class="results-table">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-list-ol"></i> Sıra</th>
+                                    <th><i class="fas fa-coins"></i> Coin</th>
+                                    <th><i class="fas fa-signal"></i> Sinyal</th>
+                                    <th><i class="fas fa-star"></i> Toplam Skor</th>
+                                    <th><i class="fas fa-chart-line"></i> Momentum</th>
+                                    <th><i class="fas fa-chart-bar"></i> Hacim</th>
+                                    <th><i class="fas fa-chart-area"></i> Volatilite</th>
+                                    <th><i class="fas fa-bullseye"></i> RSI/MACD Kalitesi</th>
+                                    <th><i class="fas fa-dollar-sign"></i> Giriş Fiyatı</th>
+                                    <th><i class="fas fa-percentage"></i> RSI</th>
+                                    <th><i class="fas fa-chart-line"></i> MACD</th>
+                                    <th><i class="fas fa-info-circle"></i> Detaylar</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rsiResultsTable">
+                                <tr>
+                                    <td colspan="11" class="text-center text-muted py-4">
+                                        <i class="fas fa-info-circle"></i> Henüz tarama yapılmadı
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Footer -->
+                <div class="text-center mt-4">
+                                         <p class="text-muted">
+                         <i class="fas fa-info-circle"></i> 
+                         <strong>Sinyaller:</strong> C20L/C20S (RSI), M2L-M5L/M2S-M5S (MACD) - Son 50 bar içinde
+                     </p>
+                                 </div>
+             </div>
+         </div>
+         
+         <!-- Super Signal Page -->
+         <div class="page-content" id="super_signal-page">
+             <div class="dashboard-container">
+                 <div class="header">
+                     <h1><i class="fas fa-rocket"></i> Deviso Super Signal</h1>
+                     <p>EMA200 + RSI/MACD Kombinasyon Scanner</p>
+                 </div>
+                 
+                 <!-- Control Panel -->
+                 <div class="control-panel">
+                     <div class="row align-items-center">
+                         <div class="col-md-4">
+                             <h5><i class="fas fa-cogs"></i> Kontrol Paneli</h5>
+                             <p class="text-muted mb-0">İki aşamalı tarama: EMA200 + RSI/MACD</p>
+                         </div>
+                         <div class="col-md-2">
+                             <label for="superMaxCoins" class="form-label">Maksimum Coin</label>
+                             <select class="form-select" id="superMaxCoins">
+                                 <option value="50">50 Coin</option>
+                                 <option value="100">100 Coin</option>
+                                 <option value="200">200 Coin</option>
+                                 <option value="480" selected>TÜM COİNLER (480)</option>
+                             </select>
+                         </div>
+                         <div class="col-md-2">
+                             <label for="superTimeframe" class="form-label">Timeframe</label>
+                             <select class="form-select" id="superTimeframe">
+                                 <option value="5m" selected>5 Dakika</option>
+                                 <option value="15m">15 Dakika</option>
+                                 <option value="1h">1 Saat</option>
+                             </select>
+                         </div>
+                         <div class="col-md-2">
+                             <button class="btn btn-scan btn-lg w-100" id="superScanBtn" onclick="startSuperSignalScan()">
+                                 <i class="fas fa-rocket"></i> Taramayı Başlat
+                             </button>
+                             <button class="btn btn-danger btn-sm w-100 mt-2" id="superStopBtn" onclick="stopSuperSignalScan()" style="display: none;">
+                                 <i class="fas fa-stop"></i> Durdur
+                             </button>
+                             <div class="loading-spinner text-center mt-2" id="superLoadingSpinner">
+                                 <div class="spinner-border text-primary" role="status">
+                                     <span class="visually-hidden">Taranıyor...</span>
+                                 </div>
+                                 <p class="mt-2">Super Signal taraması devam ediyor...</p>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+                 
+                 <!-- Statistics Cards -->
+                 <div class="row mb-4">
+                     <div class="col-md-3">
+                         <div class="stats-card">
+                             <div class="stats-number" id="totalSignals">0</div>
+                             <div class="stats-label">Toplam Sinyal</div>
+                         </div>
+                     </div>
+                     <div class="col-md-3">
+                         <div class="stats-card">
+                             <div class="stats-number" id="todaySignals">0</div>
+                             <div class="stats-label">Bugünkü Sinyal</div>
+                         </div>
+                     </div>
+                     <div class="col-md-3">
+                         <div class="stats-card">
+                             <div class="stats-number" id="currentCycle">0</div>
+                             <div class="stats-label">Mevcut Döngü</div>
+                         </div>
+                     </div>
+                     <div class="col-md-3">
+                         <div class="stats-card">
+                             <div class="stats-number" id="longSignals">0</div>
+                             <div class="stats-label">Long Sinyaller</div>
+                         </div>
+                     </div>
+                 </div>
+                 
+                 <!-- Results Table -->
+                 <div class="results-table">
+                     <div class="table-responsive">
+                         <table class="table table-hover">
+                             <thead>
+                                 <tr>
+                                     <th><i class="fas fa-coins"></i> Coin</th>
+                                     <th><i class="fas fa-chart-line"></i> EMA Ratio</th>
+                                     <th><i class="fas fa-signal"></i> RSI/MACD Sinyal</th>
+                                     <th><i class="fas fa-arrow-up"></i> Sinyal Tipi</th>
+                                     <th><i class="fas fa-clock"></i> Bar Önce</th>
+                                     <th><i class="fas fa-dollar-sign"></i> Sinyal Fiyatı</th>
+                                     <th><i class="fas fa-dollar-sign"></i> Mevcut Fiyat</th>
+                                     <th><i class="fas fa-layer-group"></i> Döngü</th>
+                                     <th><i class="fas fa-calendar"></i> Tarih</th>
+                                 </tr>
+                             </thead>
+                             <tbody id="superResultsTable">
+                                 <tr>
+                                     <td colspan="9" class="text-center text-muted py-4">
+                                         <i class="fas fa-info-circle"></i> Henüz tarama yapılmadı
+                                     </td>
+                                 </tr>
+                             </tbody>
+                         </table>
+                     </div>
+                 </div>
+                 
+                 <!-- Footer -->
+                 <div class="text-center mt-4">
+                     <p class="text-muted">
+                         <i class="fas fa-info-circle"></i> 
+                         <strong>Super Signal:</strong> EMA200 koşulunu sağlayan coinlerde RSI/MACD sinyali aranır
+                     </p>
+                 </div>
+             </div>
+         </div>
+         
+         <!-- Pro Signal Page -->
+         <div class="page-content" id="pro_signal-page">
+             <div class="dashboard-container">
+                 <div class="header">
+                     <h1><i class="fas fa-crown"></i> Deviso Pro Signal</h1>
+                     <p>Ultra Quant Scanner - Çoklu Strateji Kombinasyonu</p>
+                 </div>
+                 
+                 <!-- Control Panel -->
+                 <div class="control-panel">
+                     <div class="row align-items-center">
+                         <div class="col-md-4">
+                             <h5><i class="fas fa-cogs"></i> Kontrol Paneli</h5>
+                             <p class="text-muted mb-0">Deviso Pro Tarama</p>
+                         </div>
+                         <div class="col-md-2">
+                             <label for="proMaxCoins" class="form-label">Maksimum Coin</label>
+                             <select class="form-select" id="proMaxCoins">
+                                 <option value="50">50 Coin</option>
+                                 <option value="100">100 Coin</option>
+                                 <option value="200">200 Coin</option>
+                                 <option value="480" selected>TÜM COİNLER (480)</option>
+                             </select>
+                         </div>
+                         <div class="col-md-2">
+                             <button class="btn btn-scan btn-lg w-100" id="proScanBtn" onclick="startProSignalScan()">
+                                 <i class="fas fa-crown"></i> Taramayı Başlat
+                             </button>
+                             <button class="btn btn-danger btn-sm w-100 mt-2" id="proStopBtn" onclick="stopProSignalScan()" style="display: none;">
+                                 <i class="fas fa-stop"></i> Durdur
+                             </button>
+                             <div class="loading-spinner text-center mt-2" id="proLoadingSpinner">
+                                 <div class="spinner-border text-primary" role="status">
+                                     <span class="visually-hidden">Taranıyor...</span>
+                                 </div>
+                                 <p class="mt-2">Ultra Quant taraması devam ediyor...</p>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+                 
+                 <!-- Statistics Cards -->
+                 <div class="row mb-4">
+                     <div class="col-md-2">
+                         <div class="stats-card">
+                             <div class="stats-number" id="proTotalSignals">0</div>
+                             <div class="stats-label">Toplam Sinyal</div>
+                         </div>
+                     </div>
+                     <div class="col-md-2">
+                         <div class="stats-card">
+                             <div class="stats-number" id="proTodaySignals">0</div>
+                             <div class="stats-label">Bugünkü Sinyal</div>
+                         </div>
+                     </div>
+                     <div class="col-md-2">
+                         <div class="stats-card">
+                             <div class="stats-number" id="proCurrentCycle">0</div>
+                             <div class="stats-label">Mevcut Döngü</div>
+                         </div>
+                     </div>
+                     <div class="col-md-2">
+                         <div class="stats-card">
+                             <div class="stats-number" id="proMegaSignals">0</div>
+                             <div class="stats-label">Mega Sinyaller</div>
+                         </div>
+                     </div>
+                     <div class="col-md-2">
+                         <div class="stats-card">
+                             <div class="stats-number" id="proProSignals">0</div>
+                             <div class="stats-label">Pro Sinyaller</div>
+                         </div>
+                     </div>
+                     <div class="col-md-2">
+                         <div class="stats-card">
+                             <div class="stats-number" id="proAvgScore">0</div>
+                             <div class="stats-label">Ortalama Skor</div>
+                         </div>
+                     </div>
+                 </div>
+                 
+                 <!-- Results Table -->
+                 <div class="results-table">
+                     <div class="table-responsive">
+                         <table class="table table-hover">
+                             <thead>
+                                 <tr>
+                                     <th><i class="fas fa-coins"></i> Coin</th>
+                                     <th><i class="fas fa-crown"></i> Kategori</th>
+                                     <th><i class="fas fa-star"></i> Skor</th>
+                                     <th><i class="fas fa-chart-line"></i> EMA Ratio</th>
+                                     <th><i class="fas fa-signal"></i> RSI</th>
+                                     <th><i class="fas fa-chart-bar"></i> MACD</th>
+                                     <th><i class="fas fa-clock"></i> Timeframes</th>
+                                     <th><i class="fas fa-chart-area"></i> Volatilite</th>
+                                     <th><i class="fas fa-balance-scale"></i> Risk/Ödül</th>
+                                     <th><i class="fas fa-arrow-up"></i> Sinyal Tipi</th>
+                                     <th><i class="fas fa-dollar-sign"></i> Fiyat</th>
+                                     <th><i class="fas fa-calendar"></i> Tarih</th>
+                                 </tr>
+                             </thead>
+                             <tbody id="proResultsTable">
+                                 <tr>
+                                     <td colspan="12" class="text-center text-muted py-4">
+                                         <i class="fas fa-info-circle"></i> Henüz tarama yapılmadı
+                                     </td>
+                                 </tr>
+                             </tbody>
+                         </table>
+                     </div>
+                 </div>
+                 
+                 <!-- Footer -->
+                 <div class="text-center mt-4">
+                     <p class="text-muted">
+                         <i class="fas fa-info-circle"></i> 
+                         <strong>Ultra Quant Scanner:</strong> EMA200 + RSI + MACD + Çoklu Timeframe + Volatilite + Risk/Ödül Analizi
+                     </p>
+                 </div>
+             </div>
+         </div>
+         
+         <!-- Live Test Page -->
+         <div class="page-content" id="live_test-page">
+             <div class="dashboard-container">
+                 <div class="header">
+                     <h1><i class="fas fa-flask"></i> Deviso Live Test</h1>
+                     <p>Pro Signal Demo Trading & Performance Analytics</p>
+                 </div>
+                 
+                                   <!-- Control Panel -->
+                  <div class="control-panel">
+                      <div class="row align-items-center">
+                          <div class="col-md-3">
+                              <h5><i class="fas fa-cogs"></i> Kontrol Paneli</h5>
+                              <p class="text-muted mb-0">Demo Trading & Performance Analytics</p>
+                          </div>
+                          <div class="col-md-2">
+                              <label for="liveMaxCoins" class="form-label">Maksimum Coin</label>
+                              <select class="form-select" id="liveMaxCoins">
+                                  <option value="50">50 Coin</option>
+                                  <option value="100">100 Coin</option>
+                                  <option value="200">200 Coin</option>
+                                  <option value="480" selected>TÜM COİNLER (480)</option>
+                              </select>
+                          </div>
+                          <div class="col-md-2">
+                              <label for="liveMaxTrades" class="form-label">Maksimum İşlem</label>
+                              <select class="form-select" id="liveMaxTrades">
+                                  <option value="5">5 İşlem</option>
+                                  <option value="10" selected>10 İşlem</option>
+                                  <option value="20">20 İşlem</option>
+                              </select>
+                          </div>
+                          <div class="col-md-2">
+                              <button class="btn btn-scan btn-lg w-100" id="liveTestBtn" onclick="startLiveTest()">
+                                  <i class="fas fa-flask"></i> Testi Başlat
+                              </button>
+                              <button class="btn btn-danger btn-sm w-100 mt-2" id="liveStopBtn" onclick="stopLiveTest()" style="display: none;">
+                                  <i class="fas fa-stop"></i> Durdur
+                              </button>
+                              <div class="loading-spinner text-center mt-2" id="liveLoadingSpinner">
+                                  <div class="spinner-border text-primary" role="status">
+                                      <span class="visually-hidden">Test ediliyor...</span>
+                                  </div>
+                                  <p class="mt-2">Demo trading devam ediyor...</p>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                 
+                 <!-- Performance Statistics Cards -->
+                 <div class="row mb-4">
+                     <div class="col-md-2">
+                         <div class="stats-card">
+                             <div class="stats-number" id="liveTotalTrades">0</div>
+                             <div class="stats-label">Toplam İşlem</div>
+                         </div>
+                     </div>
+                     <div class="col-md-2">
+                         <div class="stats-card">
+                             <div class="stats-number" id="liveWinRate">0%</div>
+                             <div class="stats-label">Kazanma Oranı</div>
+                         </div>
+                     </div>
+                     <div class="col-md-2">
+                         <div class="stats-card">
+                             <div class="stats-number" id="liveTotalPnl">0</div>
+                             <div class="stats-label">Toplam PnL</div>
+                         </div>
+                     </div>
+                     <div class="col-md-2">
+                         <div class="stats-card">
+                             <div class="stats-number" id="liveMegaPnl">0%</div>
+                             <div class="stats-label">Mega Sinyal PnL</div>
+                         </div>
+                     </div>
+                     <div class="col-md-2">
+                         <div class="stats-card">
+                             <div class="stats-number" id="liveProPnl">0%</div>
+                             <div class="stats-label">Pro Sinyal PnL</div>
+                         </div>
+                     </div>
+                     <div class="col-md-2">
+                         <div class="stats-card">
+                             <div class="stats-number" id="liveActiveTrades">0</div>
+                             <div class="stats-label">Aktif İşlem</div>
+                         </div>
+                     </div>
+                 </div>
+                 
+                 <!-- Active Trades Table -->
+                 <div class="results-table mb-4">
+                     <h5 class="mb-3"><i class="fas fa-play-circle"></i> Aktif İşlemler</h5>
+                     <div class="table-responsive">
+                         <table class="table table-hover">
+                             <thead>
+                                 <tr>
+                                     <th><i class="fas fa-coins"></i> Coin</th>
+                                     <th><i class="fas fa-crown"></i> Kategori</th>
+                                     <th><i class="fas fa-star"></i> Skor</th>
+                                     <th><i class="fas fa-arrow-up"></i> Sinyal Tipi</th>
+                                     <th><i class="fas fa-dollar-sign"></i> Giriş Fiyatı</th>
+                                     <th><i class="fas fa-dollar-sign"></i> Stop Loss</th>
+                                     <th><i class="fas fa-dollar-sign"></i> Take Profit</th>
+                                     <th><i class="fas fa-clock"></i> Süre</th>
+                                 </tr>
+                             </thead>
+                             <tbody id="liveActiveTable">
+                                 <tr>
+                                     <td colspan="8" class="text-center text-muted py-4">
+                                         <i class="fas fa-info-circle"></i> Henüz aktif işlem yok
+                                     </td>
+                                 </tr>
+                             </tbody>
+                         </table>
+                     </div>
+                 </div>
+                 
+                 <!-- Completed Trades Table -->
+                 <div class="results-table">
+                     <h5 class="mb-3"><i class="fas fa-check-circle"></i> Tamamlanan İşlemler</h5>
+                     <div class="table-responsive">
+                         <table class="table table-hover">
+                             <thead>
+                                 <tr>
+                                     <th><i class="fas fa-coins"></i> Coin</th>
+                                     <th><i class="fas fa-crown"></i> Kategori</th>
+                                     <th><i class="fas fa-star"></i> Skor</th>
+                                     <th><i class="fas fa-arrow-up"></i> Sinyal Tipi</th>
+                                     <th><i class="fas fa-dollar-sign"></i> Giriş Fiyatı</th>
+                                     <th><i class="fas fa-dollar-sign"></i> Çıkış Fiyatı</th>
+                                     <th><i class="fas fa-chart-line"></i> PnL</th>
+                                     <th><i class="fas fa-percentage"></i> PnL %</th>
+                                     <th><i class="fas fa-sign-out-alt"></i> Çıkış Nedeni</th>
+                                     <th><i class="fas fa-clock"></i> Süre</th>
+                                     <th><i class="fas fa-calendar"></i> Tarih</th>
+                                 </tr>
+                             </thead>
+                             <tbody id="liveCompletedTable">
+                                 <tr>
+                                     <td colspan="11" class="text-center text-muted py-4">
+                                         <i class="fas fa-info-circle"></i> Henüz tamamlanan işlem yok
+                                     </td>
+                                 </tr>
+                             </tbody>
+                         </table>
+                     </div>
+                 </div>
+                 
+                 <!-- Footer -->
+                 <div class="text-center mt-4">
+                     <p class="text-muted">
+                         <i class="fas fa-info-circle"></i> 
+                         <strong>Live Test:</strong> Pro Signal'den gelen MEGA ve PRO sinyalleri otomatik demo işleme alır
+                     </p>
+                 </div>
+             </div>
+         </div>
+         
+         <!-- Live Trading Page -->
+         <div class="page-content" id="live_trading-page">
+             <div class="dashboard-container">
+                 <div class="header">
+                     <h1><i class="fas fa-chart-line"></i> Live Trading</h1>
+                     <p>Binance Futures Live Trading with Real API</p>
+                 </div>
+                 
+                 <!-- Control Panel -->
+                 <div class="control-panel">
+                     <div class="row align-items-center">
+                         <div class="col-md-3">
+                             <h5><i class="fas fa-cogs"></i> Kontrol Paneli</h5>
+                             <p class="text-muted mb-0">Live Trading & Performance Analytics</p>
+                         </div>
+                         <div class="col-md-2">
+                             <label for="liveTradingMaxCoins" class="form-label">Maksimum Coin</label>
+                             <select class="form-select" id="liveTradingMaxCoins">
+                                 <option value="50">50 Coin</option>
+                                 <option value="100">100 Coin</option>
+                                 <option value="200">200 Coin</option>
+                                 <option value="480" selected>TÜM COİNLER (480)</option>
+                             </select>
+                         </div>
+                         <div class="col-md-2">
+                             <label for="liveTradingMaxTrades" class="form-label">Maksimum İşlem</label>
+                             <select class="form-select" id="liveTradingMaxTrades">
+                                 <option value="5">5 İşlem</option>
+                                 <option value="10" selected>10 İşlem</option>
+                                 <option value="20">20 İşlem</option>
+                             </select>
+                         </div>
+                         <div class="col-md-2">
+                             <button class="btn btn-scan btn-lg w-100" id="liveTradingBtn" onclick="startLiveTrading()">
+                                 <i class="fas fa-chart-line"></i> Trading Başlat
+                             </button>
+                             <button class="btn btn-danger btn-sm w-100 mt-2" id="liveTradingStopBtn" onclick="stopLiveTrading()" style="display: none;">
+                                 <i class="fas fa-stop"></i> Durdur
+                             </button>
+                             <div class="loading-spinner text-center mt-2" id="liveTradingLoadingSpinner">
+                                 <div class="spinner-border text-primary" role="status">
+                                     <span class="visually-hidden">Trading ediliyor...</span>
+                                 </div>
+                                 <p class="mt-2">Live trading devam ediyor...</p>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+                 
+                 <!-- Futures Kasa Yönetimi Ayarları -->
+                 <div class="control-panel mt-3">
+                     <div class="row">
+                         <div class="col-12">
+                             <h5><i class="fas fa-shield-alt"></i> Futures Kasa Yönetimi</h5>
+                             <p class="text-muted mb-3">Risk yönetimi ve pozisyon büyüklüğü ayarları</p>
+                         </div>
+                     </div>
+                     <div class="row">
+                         <div class="col-md-2">
+                             <label for="futuresBalance" class="form-label">Futures Bakiyesi (USDT)</label>
+                             <input type="number" class="form-control" id="futuresBalance" value="1000" min="100" step="100">
+                         </div>
+                         <div class="col-md-2">
+                             <label for="riskPerTrade" class="form-label">İşlem Başına Risk (%)</label>
+                             <input type="number" class="form-control" id="riskPerTrade" value="2" min="0.5" max="10" step="0.5">
+                         </div>
+                         <div class="col-md-2">
+                             <label for="maxRiskPerDay" class="form-label">Günlük Maksimum Risk (%)</label>
+                             <input type="number" class="form-control" id="maxRiskPerDay" value="10" min="5" max="50" step="1">
+                         </div>
+                         <div class="col-md-2">
+                             <label for="leverage" class="form-label">Kaldıraç</label>
+                             <select class="form-select" id="leverage">
+                                 <option value="1">1x</option>
+                                 <option value="2">2x</option>
+                                 <option value="5">5x</option>
+                                 <option value="10" selected>10x</option>
+                                 <option value="20">20x</option>
+                                 <option value="50">50x</option>
+                                 <option value="100">100x</option>
+                             </select>
+                         </div>
+                         <div class="col-md-2">
+                             <label for="marginType" class="form-label">Margin Tipi</label>
+                             <select class="form-select" id="marginType">
+                                 <option value="ISOLATED" selected>ISOLATED</option>
+                                 <option value="CROSSED">CROSSED</option>
+                             </select>
+                         </div>
+                         <div class="col-md-2">
+                             <label for="minPositionValue" class="form-label">Min Pozisyon (USDT)</label>
+                             <input type="number" class="form-control" id="minPositionValue" value="10" min="5" step="5">
+                         </div>
+                     </div>
+                     <div class="row mt-2">
+                         <div class="col-md-2">
+                             <label for="maxPositionValue" class="form-label">Max Pozisyon (USDT)</label>
+                             <input type="number" class="form-control" id="maxPositionValue" value="100" min="20" step="10">
+                         </div>
+                         <div class="col-md-2">
+                             <div class="form-check mt-4">
+                                 <input class="form-check-input" type="checkbox" id="autoAdjustLeverage" checked>
+                                 <label class="form-check-label" for="autoAdjustLeverage">
+                                     Otomatik Kaldıraç
+                                 </label>
+                             </div>
+                         </div>
+                         <div class="col-md-2">
+                             <div class="form-check mt-4">
+                                 <input class="form-check-input" type="checkbox" id="useTrailingStop">
+                                 <label class="form-check-label" for="useTrailingStop">
+                                     Trailing Stop
+                                 </label>
+                             </div>
+                         </div>
+                         <div class="col-md-2">
+                             <label for="trailingStopDistance" class="form-label">Trailing Stop (%)</label>
+                             <input type="number" class="form-control" id="trailingStopDistance" value="2" min="0.5" max="10" step="0.5">
+                         </div>
+                         <div class="col-md-4">
+                             <button class="btn btn-outline-primary btn-sm mt-4" onclick="saveFuturesSettings()">
+                                 <i class="fas fa-save"></i> Ayarları Kaydet
+                             </button>
+                             <button class="btn btn-outline-info btn-sm mt-4 ms-2" onclick="loadFuturesSettings()">
+                                 <i class="fas fa-sync"></i> Ayarları Yükle
+                             </button>
+                         </div>
+                     </div>
+                 </div>
+                 
+                 <!-- Futures Bakiye Kartları -->
+                 <div class="row mb-4">
+                     <div class="col-12">
+                         <h5><i class="fas fa-wallet"></i> Futures Hesap Bilgileri</h5>
+                         <p class="text-muted mb-3">Gerçek zamanlı bakiye ve pozisyon bilgileri</p>
+                     </div>
+                 </div>
+                 <div class="row mb-4">
+                     <div class="col-md-2">
+                         <div class="stats-card bg-primary text-white">
+                             <div class="stats-number" id="futuresTotalBalance">0.00</div>
+                             <div class="stats-label">Toplam Bakiye (USDT)</div>
+                             <small class="text-light" id="balanceUpdateTime">Son güncelleme: --</small>
+                         </div>
+                     </div>
+                     <div class="col-md-2">
+                         <div class="stats-card bg-success text-white">
+                             <div class="stats-number" id="futuresAvailableBalance">0.00</div>
+                             <div class="stats-label">Kullanılabilir (USDT)</div>
+                         </div>
+                     </div>
+                     <div class="col-md-2">
+                         <div class="stats-card bg-info text-white">
+                             <div class="stats-number" id="futuresMarginBalance">0.00</div>
+                             <div class="stats-label">Margin Bakiyesi (USDT)</div>
+                         </div>
+                     </div>
+                     <div class="col-md-2">
+                         <div class="stats-card" id="futuresUnrealizedPnlCard">
+                             <div class="stats-number" id="futuresUnrealizedPnl">0.00</div>
+                             <div class="stats-label">Gerçekleşmemiş PnL</div>
+                         </div>
+                     </div>
+                     <div class="col-md-2">
+                         <div class="stats-card bg-warning text-white">
+                             <div class="stats-number" id="futuresPositionCount">0</div>
+                             <div class="stats-label">Aktif Pozisyon</div>
+                         </div>
+                     </div>
+                     <div class="col-md-2">
+                         <div class="stats-card bg-secondary text-white">
+                             <button class="btn btn-sm btn-outline-light" onclick="refreshFuturesBalance()">
+                                 <i class="fas fa-sync-alt"></i> Yenile
+                             </button>
+                             <div class="stats-label mt-2">Manuel Güncelleme</div>
+                         </div>
+                     </div>
+                 </div>
+                 
+                 <!-- Performance Statistics Cards -->
+                 <div class="row mb-4">
+                     <div class="col-md-2">
+                         <div class="stats-card">
+                             <div class="stats-number" id="liveTradingTotalTrades">0</div>
+                             <div class="stats-label">Toplam İşlem</div>
+                         </div>
+                     </div>
+                     <div class="col-md-2">
+                         <div class="stats-card">
+                             <div class="stats-number" id="liveTradingWinRate">0%</div>
+                             <div class="stats-label">Kazanma Oranı</div>
+                         </div>
+                     </div>
+                     <div class="col-md-2">
+                         <div class="stats-card">
+                             <div class="stats-number" id="liveTradingTotalPnl">0</div>
+                             <div class="stats-label">Toplam PnL</div>
+                         </div>
+                     </div>
+                     <div class="col-md-2">
+                         <div class="stats-card">
+                             <div class="stats-number" id="liveTradingMegaPnl">0%</div>
+                             <div class="stats-label">Mega Sinyal PnL</div>
+                         </div>
+                     </div>
+                     <div class="col-md-2">
+                         <div class="stats-card">
+                             <div class="stats-number" id="liveTradingProPnl">0%</div>
+                             <div class="stats-label">Pro Sinyal PnL</div>
+                         </div>
+                     </div>
+                     <div class="col-md-2">
+                         <div class="stats-card">
+                             <div class="stats-number" id="liveTradingActiveTrades">0</div>
+                             <div class="stats-label">Aktif İşlem</div>
+                         </div>
+                     </div>
+                 </div>
+                 
+                 <!-- Active Trades Table -->
+                 <div class="results-table mb-4">
+                     <h5 class="mb-3"><i class="fas fa-play-circle"></i> Aktif İşlemler</h5>
+                     <div class="table-responsive">
+                         <table class="table table-hover">
+                             <thead class="table-dark">
+                                 <tr>
+                                     <th>Sembol</th>
+                                     <th>Sinyal Kategorisi</th>
+                                     <th>Sinyal Skoru</th>
+                                     <th>İşlem Tipi</th>
+                                     <th>Giriş Fiyatı</th>
+                                     <th>Stop Loss</th>
+                                     <th>Take Profit</th>
+                                     <th>Süre</th>
+                                 </tr>
+                             </thead>
+                             <tbody id="liveTradingActiveTable">
+                                 <tr>
+                                     <td colspan="8" class="text-center text-muted py-4">
+                                         <i class="fas fa-info-circle"></i> Henüz aktif işlem yok
+                                     </td>
+                                 </tr>
+                             </tbody>
+                         </table>
+                     </div>
+                 </div>
+                 
+                 <!-- Completed Trades Table -->
+                 <div class="results-table">
+                     <h5 class="mb-3"><i class="fas fa-check-circle"></i> Tamamlanan İşlemler</h5>
+                     <div class="table-responsive">
+                         <table class="table table-hover">
+                             <thead class="table-dark">
+                                 <tr>
+                                     <th>Sembol</th>
+                                     <th>Sinyal Kategorisi</th>
+                                     <th>Sinyal Skoru</th>
+                                     <th>İşlem Tipi</th>
+                                     <th>Giriş Fiyatı</th>
+                                     <th>Çıkış Fiyatı</th>
+                                     <th>PnL</th>
+                                     <th>PnL %</th>
+                                     <th>Çıkış Nedeni</th>
+                                     <th>Süre</th>
+                                     <th>Çıkış Zamanı</th>
+                                 </tr>
+                             </thead>
+                             <tbody id="liveTradingCompletedTable">
+                                 <tr>
+                                     <td colspan="11" class="text-center text-muted py-4">
+                                         <i class="fas fa-info-circle"></i> Henüz tamamlanan işlem yok
+                                     </td>
+                                 </tr>
+                             </tbody>
+                         </table>
+                     </div>
+                 </div>
+                 
+                 <!-- Test İşlemleri -->
+                 <div class="control-panel mt-4">
+                     <div class="row">
+                         <div class="col-12">
+                             <h5><i class="fas fa-flask"></i> Test İşlemleri</h5>
+                             <p class="text-muted mb-3">Sistem testi için manuel işlem açma</p>
+                         </div>
+                     </div>
+                     <div class="row">
+                         <div class="col-md-3">
+                             <label for="testSymbol" class="form-label">Test Sembolü</label>
+                             <select class="form-select" id="testSymbol">
+                                 <option value="BTCUSDT" selected>BTCUSDT</option>
+                                 <option value="ETHUSDT">ETHUSDT</option>
+                                 <option value="ADAUSDT">ADAUSDT</option>
+                                 <option value="DOTUSDT">DOTUSDT</option>
+                                 <option value="LINKUSDT">LINKUSDT</option>
+                             </select>
+                         </div>
+                         <div class="col-md-3">
+                             <label for="testSignalType" class="form-label">İşlem Tipi</label>
+                             <select class="form-select" id="testSignalType">
+                                 <option value="LONG" selected>LONG</option>
+                                 <option value="SHORT">SHORT</option>
+                             </select>
+                         </div>
+                         <div class="col-md-3">
+                             <button class="btn btn-warning btn-lg w-100" onclick="testManualTrade()">
+                                 <i class="fas fa-flask"></i> Test İşlemi Aç
+                             </button>
+                         </div>
+                         <div class="col-md-3">
+                             <button class="btn btn-danger btn-lg w-100" onclick="closeAllTrades()">
+                                 <i class="fas fa-times"></i> Tüm İşlemleri Kapat
+                             </button>
+                         </div>
+                     </div>
+                 </div>
+                 
+                 <!-- Footer -->
+                 <div class="text-center mt-4">
+                     <p class="text-muted">
+                         <i class="fas fa-info-circle"></i> 
+                         <strong>Live Trading:</strong> Binance API ile gerçek futures işlemleri açar
+                     </p>
+                 </div>
+             </div>
+         </div>
+         
+         <!-- Settings Page -->
+        <div class="page-content" id="settings-page">
+            <div class="dashboard-container">
+                <div class="header">
+                    <h1><i class="fas fa-cog"></i> Ayarlar</h1>
+                    <p>Sistem ve modül ayarları</p>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-modules"></i> Modül Durumu</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="moduleStatus">
+                                    <!-- Modül durumları buraya gelecek -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-info-circle"></i> Sistem Bilgileri</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="systemInfo">
+                                    <!-- Sistem bilgileri buraya gelecek -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let isScanning = false;
+        let currentModule = 'dashboard';
+        
+        // Sayfa yüklendiğinde durumu kontrol et
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatus();
+            updateCurrentTime();
+            setInterval(updateStatus, 5000); // Her 5 saniyede bir güncelle
+            setInterval(updateCurrentTime, 1000); // Her saniye saat güncelle
+        });
+        
+        function updateCurrentTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString('tr-TR');
+        }
+        
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+        }
+        
+        function showModule(moduleName) {
+            // Tüm sayfaları gizle
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Tüm nav linklerini pasif yap
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Seçilen sayfayı göster
+            const targetPage = document.getElementById(moduleName + '-page');
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
+            
+            // Seçilen nav linkini aktif yap
+            const activeLink = document.querySelector(`[data-module="${moduleName}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+            
+            // Sayfa başlığını güncelle
+                         const pageTitles = {
+                 'dashboard': 'Ana Sayfa',
+                 'ema': 'Deviso Ema Scanner',
+                 'rsi_macd': 'Deviso R/M Scanner',
+                 'super_signal': 'Deviso Super Signal',
+                 'pro_signal': 'Deviso Pro Signal',
+                 'live_test': 'Deviso Live Test',
+            'live_trading': 'Live Trading',
+                 'settings': 'Ayarlar'
+             };
+            
+            document.getElementById('pageTitle').textContent = pageTitles[moduleName] || 'Sayfa';
+            currentModule = moduleName;
+            
+            // Ayarlar sayfasındaysa modül durumlarını güncelle
+            if (moduleName === 'settings') {
+                updateModuleStatus();
+            }
+        }
+        
+        function updateModuleStatus() {
+            fetch('/api/modules')
+                .then(response => response.json())
+                .then(data => {
+                    const moduleStatusDiv = document.getElementById('moduleStatus');
+                    let html = '';
+                    
+                    for (const [moduleName, moduleInfo] of Object.entries(data.modules_info)) {
+                        const statusClass = moduleInfo.loaded ? 'text-success' : 'text-danger';
+                        const statusIcon = moduleInfo.loaded ? 'fa-check-circle' : 'fa-times-circle';
+                        const statusText = moduleInfo.loaded ? 'Aktif' : 'Pasif';
+                        
+                        html += `
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span><strong>${moduleName}</strong></span>
+                                <span class="${statusClass}">
+                                    <i class="fas ${statusIcon}"></i> ${statusText}
+                                </span>
+                            </div>
+                        `;
+                    }
+                    
+                    moduleStatusDiv.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Modül durumu alınamadı:', error);
+                });
+        }
+        
+        // EMA200 Scanner Functions
+        function startEmaScan() {
+            if (isScanning) return;
+            
+            const maxCoins = document.getElementById('emaMaxCoins').value;
+            const timeframe = document.getElementById('emaTimeframe').value;
+            const scanBtn = document.getElementById('emaScanBtn');
+            const loadingSpinner = document.getElementById('emaLoadingSpinner');
+            
+            // UI'yi güncelle
+            isScanning = true;
+            scanBtn.disabled = true;
+            scanBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Taranıyor...';
+            loadingSpinner.style.display = 'block';
+            
+            // API çağrısı
+            fetch(`/api/scan/ema_scanner?max_coins=${maxCoins}&timeframe=${timeframe}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        checkEmaResults();
+                    } else {
+                        alert('Hata: ' + data.message);
+                        resetEmaScanButton();
+                    }
+                })
+                .catch(error => {
+                    console.error('Hata:', error);
+                    alert('Tarama başlatılırken hata oluştu!');
+                    resetEmaScanButton();
+                });
+        }
+        
+        function checkEmaResults() {
+            fetch('/api/results/ema_scanner')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.is_scanning) {
+                        updateEmaResults(data.results);
+                        updateStats(data);
+                        resetEmaScanButton();
+                    } else {
+                        setTimeout(checkEmaResults, 2000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Hata:', error);
+                    resetEmaScanButton();
+                });
+        }
+        
+        function updateEmaResults(results) {
+            const tbody = document.getElementById('emaResultsTable');
+            
+            if (results.length === 0) {
+                            tbody.innerHTML = `
+                <tr>
+                    <td colspan="11" class="text-center text-muted py-4">
+                        <i class="fas fa-exclamation-triangle"></i> Koşulları sağlayan coin bulunamadı
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        // Sıralama skoruna göre sırala
+        const sortedResults = results.sort((a, b) => (b.ranking_score || 0) - (a.ranking_score || 0));
+        
+        tbody.innerHTML = sortedResults.map((coin, index) => {
+            const rankingDetails = coin.ranking_details || {};
+            const momentumScore = rankingDetails.momentum_score || 0;
+            const volumeScore = rankingDetails.volume_score || 0;
+            const priceChangeScore = rankingDetails.price_change_score || 0;
+            const qualityScore = rankingDetails.quality_score || 0;
+            const totalScore = coin.ranking_score || 0;
+            
+            // Skor renklerini belirle
+            const getScoreColor = (score, max) => {
+                const percentage = (score / max) * 100;
+                if (percentage >= 80) return 'bg-success';
+                if (percentage >= 60) return 'bg-warning text-dark';
+                if (percentage >= 40) return 'bg-info';
+                if (percentage >= 20) return 'bg-secondary';
+                return 'bg-light text-dark';
+            };
+            
+            return `
+                <tr>
+                    <td><span class="badge bg-primary">${index + 1}</span></td>
+                    <td><strong>${coin.symbol || 'N/A'}</strong></td>
+                    <td><span class="badge ${coin.signal_type === 'LONG' ? 'bg-success' : 'bg-danger'}">${coin.signal_type || 'N/A'}</span></td>
+                    <td><span class="badge ${getScoreColor(totalScore, 100)}">${totalScore.toFixed(1)}</span></td>
+                    <td><span class="badge ${getScoreColor(momentumScore, 30)}">${momentumScore.toFixed(1)}</span></td>
+                    <td><span class="badge ${getScoreColor(volumeScore, 25)}">${volumeScore.toFixed(1)}</span></td>
+                    <td><span class="badge ${getScoreColor(priceChangeScore, 25)}">${priceChangeScore.toFixed(1)}</span></td>
+                    <td><span class="badge ${getScoreColor(qualityScore, 20)}">${qualityScore.toFixed(1)}</span></td>
+                    <td class="${(coin.ratio || 0) >= 0 ? 'positive-ratio' : 'negative-ratio'}">${(coin.ratio || 0).toFixed(2)}%</td>
+                    <td class="${(rankingDetails.bar_price_change_percent || 0) >= 0 ? 'positive-ratio' : 'negative-ratio'}">${(rankingDetails.bar_price_change_percent || 0).toFixed(2)}%</td>
+                    <td>${coin.entry_price ? '$' + coin.entry_price.toFixed(6) : 'N/A'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-info" onclick="showDetails('${coin.symbol}', ${JSON.stringify(coin).replace(/"/g, '&quot;')})">
+                            <i class="fas fa-eye"></i> Detay
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+        }
+        
+        function resetEmaScanButton() {
+            const scanBtn = document.getElementById('emaScanBtn');
+            const loadingSpinner = document.getElementById('emaLoadingSpinner');
+            
+            isScanning = false;
+            scanBtn.disabled = false;
+            scanBtn.innerHTML = '<i class="fas fa-search"></i> Taramayı Başlat';
+            loadingSpinner.style.display = 'none';
+        }
+        
+        function showDetails(symbol, coinData) {
+            const rankingDetails = coinData.ranking_details || {};
+            const modal = `
+                <div class="modal fade" id="detailsModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title"><i class="fas fa-chart-line"></i> ${symbol} - Detaylı Analiz</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6><i class="fas fa-star"></i> Sıralama Skorları</h6>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item d-flex justify-content-between">
+                                                <span>Toplam Skor:</span>
+                                                <span class="badge bg-primary">${coinData.ranking_score?.toFixed(1) || 0}</span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between">
+                                                <span>Momentum (0-30):</span>
+                                                <span class="badge bg-info">${rankingDetails.momentum_score?.toFixed(1) || 0}</span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between">
+                                                <span>Hacim (0-25):</span>
+                                                <span class="badge bg-secondary">${rankingDetails.volume_score?.toFixed(1) || 0}</span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between">
+                                                <span>Volatilite (0-25):</span>
+                                                <span class="badge bg-dark">${rankingDetails.price_change_score?.toFixed(1) || 0}</span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between">
+                                                <span>EMA Kalitesi (0-20):</span>
+                                                <span class="badge bg-success">${rankingDetails.quality_score?.toFixed(1) || 0}</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6><i class="fas fa-info-circle"></i> Teknik Bilgiler</h6>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item d-flex justify-content-between">
+                                                <span>Sinyal:</span>
+                                                <span class="badge ${coinData.signal_type === 'LONG' ? 'bg-success' : 'bg-danger'}">${coinData.signal_type}</span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between">
+                                                <span>EMA200 Ratio:</span>
+                                                <span class="${(coinData.ratio || 0) >= 0 ? 'text-success' : 'text-danger'}">${(coinData.ratio || 0).toFixed(2)}%</span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between">
+                                                <span>Mevcut Fiyat:</span>
+                                                <span>$${coinData.entry_price?.toFixed(6) || 'N/A'}</span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between">
+                                                <span>Timeframe:</span>
+                                                <span>${coinData.timeframe || 'N/A'}</span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between">
+                                                <span>Fiyat Değişimi (Bar):</span>
+                                                <span class="${(rankingDetails.bar_price_change_percent || 0) >= 0 ? 'text-success' : 'text-danger'}">${(rankingDetails.bar_price_change_percent || 0).toFixed(2)}%</span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between">
+                                                <span>Tarama Zamanı:</span>
+                                                <span>${coinData.timestamp || 'N/A'}</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Eski modal'ı kaldır
+            const oldModal = document.getElementById('detailsModal');
+            if (oldModal) oldModal.remove();
+            
+            // Yeni modal'ı ekle ve göster
+            document.body.insertAdjacentHTML('beforeend', modal);
+            const newModal = new bootstrap.Modal(document.getElementById('detailsModal'));
+            newModal.show();
+        }
+        
+        // RSI/MACD Scanner Functions
+        function startRsiScan() {
+            if (isScanning) return;
+            
+            const maxCoins = document.getElementById('rsiMaxCoins').value;
+            const timeframe = document.getElementById('rsiTimeframe').value;
+            const scanBtn = document.getElementById('rsiScanBtn');
+            const loadingSpinner = document.getElementById('rsiLoadingSpinner');
+            
+            // UI'yi güncelle
+            isScanning = true;
+            scanBtn.disabled = true;
+            scanBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Taranıyor...';
+            loadingSpinner.style.display = 'block';
+            
+            // API çağrısı
+            fetch(`/api/scan/rsi_macd_scanner?timeframe=${timeframe}&max_coins=${maxCoins}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        checkRsiResults();
+                    } else {
+                        alert('Hata: ' + data.message);
+                        resetRsiScanButton();
+                    }
+                })
+                .catch(error => {
+                    console.error('Hata:', error);
+                    alert('Tarama başlatılırken hata oluştu!');
+                    resetRsiScanButton();
+                });
+        }
+        
+        function checkRsiResults() {
+            fetch('/api/results/rsi_macd_scanner')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.is_scanning) {
+                        updateRsiResults(data.results);
+                        updateStats(data);
+                        resetRsiScanButton();
+                    } else {
+                        setTimeout(checkRsiResults, 2000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Hata:', error);
+                    resetRsiScanButton();
+                });
+        }
+        
+        function updateRsiResults(results) {
+            const tbody = document.getElementById('rsiResultsTable');
+            
+            if (results.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="12" class="text-center text-muted py-4">
+                            <i class="fas fa-exclamation-triangle"></i> Koşulları sağlayan coin bulunamadı
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Skor renklerini belirle
+            const getScoreColor = (score, max) => {
+                const percentage = (score / max) * 100;
+                if (percentage >= 80) return 'bg-success';
+                if (percentage >= 60) return 'bg-warning text-dark';
+                if (percentage >= 40) return 'bg-info';
+                if (percentage >= 20) return 'bg-secondary';
+                return 'bg-light text-dark';
+            };
+            
+            // Sıralama skoruna göre sırala
+            results.sort((a, b) => (b.ranking_score || 0) - (a.ranking_score || 0));
+            
+            tbody.innerHTML = results.map((coin, index) => {
+                const rankingDetails = coin.ranking_details || {};
+                const momentumScore = rankingDetails.momentum_score || 0;
+                const volumeScore = rankingDetails.volume_score || 0;
+                const priceChangeScore = rankingDetails.price_change_score || 0;
+                const qualityScore = rankingDetails.quality_score || 0;
+                const totalScore = coin.ranking_score || 0;
+                
+                const signalClass = coin.signal_type.includes('L') ? 'text-success' : 'text-danger';
+                const signalIcon = coin.signal_type.includes('L') ? '📈' : '📉';
+                
+                return `
+                    <tr>
+                        <td><span class="badge bg-primary">${index + 1}</span></td>
+                        <td><strong>${coin.symbol || 'N/A'}</strong></td>
+                        <td><span class="${signalClass}">${signalIcon} ${coin.signal_type || 'N/A'}</span></td>
+                        <td><span class="badge ${getScoreColor(totalScore, 100)}">${totalScore.toFixed(1)}</span></td>
+                        <td><span class="badge ${getScoreColor(momentumScore, 30)}">${momentumScore.toFixed(1)}</span></td>
+                        <td><span class="badge ${getScoreColor(volumeScore, 25)}">${volumeScore.toFixed(1)}</span></td>
+                        <td><span class="badge ${getScoreColor(priceChangeScore, 25)}">${priceChangeScore.toFixed(1)}</span></td>
+                        <td><span class="badge ${getScoreColor(qualityScore, 20)}">${qualityScore.toFixed(1)}</span></td>
+                        <td>$${coin.entry_price || 'N/A'}</td>
+                        <td>${coin.rsi ? coin.rsi.toFixed(1) : 'N/A'}</td>
+                        <td>${coin.macd ? coin.macd.toFixed(6) : 'N/A'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-info" onclick="showRsiDetails('${coin.symbol}')">
+                                <i class="fas fa-info-circle"></i> Detay
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function resetRsiScanButton() {
+            const scanBtn = document.getElementById('rsiScanBtn');
+            const loadingSpinner = document.getElementById('rsiLoadingSpinner');
+            
+            isScanning = false;
+            scanBtn.disabled = false;
+            scanBtn.innerHTML = '<i class="fas fa-search"></i> Taramayı Başlat';
+            loadingSpinner.style.display = 'none';
+        }
+        
+        function showRsiDetails(symbol) {
+            // Son tarama sonuçlarından coin bilgisini bul
+            fetch('/api/results/rsi_macd_scanner')
+                .then(response => response.json())
+                .then(data => {
+                    const coinData = data.results.find(coin => coin.symbol === symbol);
+                    if (coinData) {
+                        const rankingDetails = coinData.ranking_details || {};
+                        
+                        // Skor renklerini belirle
+                        const getScoreColor = (score, max) => {
+                            const percentage = (score / max) * 100;
+                            if (percentage >= 80) return 'bg-success';
+                            if (percentage >= 60) return 'bg-warning text-dark';
+                            if (percentage >= 40) return 'bg-info';
+                            if (percentage >= 20) return 'bg-secondary';
+                            return 'bg-light text-dark';
+                        };
+                        
+                        // Modal'ı oluştur
+                        const modal = `
+                            <div class="modal fade" id="detailsModal" tabindex="-1">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">
+                                                <i class="fas fa-chart-line"></i> ${symbol} - RSI/MACD Analizi
+                                            </h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <h6><i class="fas fa-signal"></i> Sinyal Bilgileri</h6>
+                                                    <ul class="list-group list-group-flush">
+                                                        <li class="list-group-item d-flex justify-content-between">
+                                                            <span>Sinyal Tipi:</span>
+                                                            <span class="badge ${coinData.signal_type.includes('L') ? 'bg-success' : 'bg-danger'}">${coinData.signal_type}</span>
+                                                        </li>
+                                                        <li class="list-group-item d-flex justify-content-between">
+                                                            <span>Giriş Fiyatı:</span>
+                                                            <span>$${coinData.entry_price ? coinData.entry_price.toFixed(6) : 'N/A'}</span>
+                                                        </li>
+                                                        <li class="list-group-item d-flex justify-content-between">
+                                                            <span>RSI Değeri:</span>
+                                                            <span>${coinData.rsi ? coinData.rsi.toFixed(1) : 'N/A'}</span>
+                                                        </li>
+                                                        <li class="list-group-item d-flex justify-content-between">
+                                                            <span>MACD:</span>
+                                                            <span>${coinData.macd ? coinData.macd.toFixed(6) : 'N/A'}</span>
+                                                        </li>
+                                                        <li class="list-group-item d-flex justify-content-between">
+                                                            <span>MACD Signal:</span>
+                                                            <span>${coinData.macd_signal ? coinData.macd_signal.toFixed(6) : 'N/A'}</span>
+                                                        </li>
+                                                        <li class="list-group-item d-flex justify-content-between">
+                                                            <span>MACD Histogram:</span>
+                                                            <span>${coinData.macd_histogram ? coinData.macd_histogram.toFixed(6) : 'N/A'}</span>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <h6><i class="fas fa-star"></i> Sıralama Detayları</h6>
+                                                    <ul class="list-group list-group-flush">
+                                                        <li class="list-group-item d-flex justify-content-between">
+                                                            <span>Toplam Skor:</span>
+                                                            <span class="badge ${getScoreColor(coinData.ranking_score || 0, 100)}">${(coinData.ranking_score || 0).toFixed(1)}/100</span>
+                                                        </li>
+                                                        <li class="list-group-item d-flex justify-content-between">
+                                                            <span>Momentum Skoru:</span>
+                                                            <span class="badge ${getScoreColor(rankingDetails.momentum_score || 0, 30)}">${(rankingDetails.momentum_score || 0).toFixed(1)}/30</span>
+                                                        </li>
+                                                        <li class="list-group-item d-flex justify-content-between">
+                                                            <span>Hacim Skoru:</span>
+                                                            <span class="badge ${getScoreColor(rankingDetails.volume_score || 0, 25)}">${(rankingDetails.volume_score || 0).toFixed(1)}/25</span>
+                                                        </li>
+                                                        <li class="list-group-item d-flex justify-content-between">
+                                                            <span>Volatilite Skoru:</span>
+                                                            <span class="badge ${getScoreColor(rankingDetails.price_change_score || 0, 25)}">${(rankingDetails.price_change_score || 0).toFixed(1)}/25</span>
+                                                        </li>
+                                                        <li class="list-group-item d-flex justify-content-between">
+                                                            <span>RSI/MACD Kalitesi:</span>
+                                                            <span class="badge ${getScoreColor(rankingDetails.quality_score || 0, 20)}">${(rankingDetails.quality_score || 0).toFixed(1)}/20</span>
+                                                        </li>
+                                                        <li class="list-group-item d-flex justify-content-between">
+                                                            <span>Tarama Zamanı:</span>
+                                                            <span>${coinData.timestamp || 'N/A'}</span>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Eski modal'ı kaldır
+                        const oldModal = document.getElementById('detailsModal');
+                        if (oldModal) oldModal.remove();
+                        
+                        // Yeni modal'ı ekle ve göster
+                        document.body.insertAdjacentHTML('beforeend', modal);
+                        const newModal = new bootstrap.Modal(document.getElementById('detailsModal'));
+                        newModal.show();
+                    }
+                })
+                .catch(error => {
+                    console.error('Detay getirme hatası:', error);
+                    alert('Coin detayları alınamadı!');
+                });
+        }
+        
+        function updateStats(data) {
+            // Ana sayfada stats kartları yok, bu fonksiyonu boş bırakıyoruz
+        }
+        
+                 function updateStatus() {
+             fetch('/api/status')
+                 .then(response => response.json())
+                 .then(data => {
+                     const systemStatus = document.getElementById('systemStatus');
+                     
+                     if (data.is_scanning) {
+                         systemStatus.innerHTML = '<i class="fas fa-circle text-warning"></i><span>Taranıyor...</span>';
+                     } else {
+                         systemStatus.innerHTML = '<i class="fas fa-circle text-success"></i><span>Sistem Aktif</span>';
+                     }
+                 })
+                 .catch(error => {
+                     console.error('Durum güncellenirken hata:', error);
+                 });
+         }
+         
+         // Super Signal Scanner Functions
+         function startSuperSignalScan() {
+             if (isScanning) return;
+             
+             const maxCoins = document.getElementById('superMaxCoins').value;
+             const timeframe = document.getElementById('superTimeframe').value;
+             const scanBtn = document.getElementById('superScanBtn');
+             const stopBtn = document.getElementById('superStopBtn');
+             const loadingSpinner = document.getElementById('superLoadingSpinner');
+             
+             // UI'yi güncelle
+             isScanning = true;
+             scanBtn.disabled = true;
+             scanBtn.style.display = 'none';
+             stopBtn.style.display = 'block';
+             loadingSpinner.style.display = 'block';
+             
+             // API çağrısı
+             fetch(`/api/scan/super_signal?max_coins=${maxCoins}&timeframe=${timeframe}`)
+                 .then(response => response.json())
+                 .then(data => {
+                     if (data.status === 'success') {
+                         checkSuperSignalResults();
+                     } else {
+                         alert('Hata: ' + data.message);
+                         resetSuperSignalScanButton();
+                     }
+                 })
+                 .catch(error => {
+                     console.error('Hata:', error);
+                     alert('Tarama başlatılırken hata oluştu!');
+                     resetSuperSignalScanButton();
+                 });
+         }
+         
+         function stopSuperSignalScan() {
+             fetch('/api/scan/super_signal/stop')
+                 .then(response => response.json())
+                 .then(data => {
+                     if (data.status === 'success') {
+                         resetSuperSignalScanButton();
+                         alert('Super Signal taraması durduruldu!');
+                     } else {
+                         alert('Hata: ' + data.message);
+                     }
+                 })
+                 .catch(error => {
+                     console.error('Hata:', error);
+                     alert('Durdurma işlemi başarısız!');
+                 });
+         }
+         
+         function checkSuperSignalResults() {
+             fetch('/api/results/super_signal')
+                 .then(response => response.json())
+                 .then(data => {
+                     updateSuperSignalResults(data.signals);
+                     updateSuperSignalStats(data.statistics);
+                     
+                     if (data.is_running) {
+                         setTimeout(checkSuperSignalResults, 5000); // Her 5 saniyede bir güncelle
+                     } else {
+                         resetSuperSignalScanButton();
+                     }
+                 })
+                 .catch(error => {
+                     console.error('Hata:', error);
+                     resetSuperSignalScanButton();
+                 });
+         }
+         
+         function updateSuperSignalResults(signals) {
+             const tbody = document.getElementById('superResultsTable');
+             
+             if (signals.length === 0) {
+                 tbody.innerHTML = `
+                     <tr>
+                         <td colspan="9" class="text-center text-muted py-4">
+                             <i class="fas fa-exclamation-triangle"></i> Henüz sinyal bulunamadı
+                         </td>
+                     </tr>
+                 `;
+                 return;
+             }
+             
+             tbody.innerHTML = signals.map(signal => {
+                 // Sinyal tipine göre icon ve class belirle
+                 let signalIcon = '📉';
+                 let signalClass = 'text-danger';
+                 
+                 if (signal.signal === 'C20L' || signal.signal === 'M5L') {
+                     signalIcon = '📈';
+                     signalClass = 'text-success';
+                 }
+                 
+                 return `
+                     <tr>
+                         <td><strong>${signal.symbol || 'N/A'}</strong></td>
+                         <td class="${(signal.ema_ratio || 0) >= 0 ? 'positive-ratio' : 'negative-ratio'}">${(signal.ema_ratio || 0).toFixed(2)}%</td>
+                         <td class="${signalClass}">${signalIcon} ${signal.signal || 'N/A'}</td>
+                         <td><span class="badge ${signal.signal === 'C20L' || signal.signal === 'M5L' ? 'bg-success' : 'bg-danger'}">${signal.signal || 'N/A'}</span></td>
+                         <td>${signal.bars_ago || 'N/A'} bar</td>
+                         <td>$${(signal.price || 0).toFixed(6)}</td>
+                         <td>$${(signal.current_price || 0).toFixed(6)}</td>
+                         <td><span class="badge bg-info">1</span></td>
+                         <td>${signal.timestamp ? new Date(signal.timestamp).toLocaleString('tr-TR') : 'N/A'}</td>
+                     </tr>
+                 `;
+             }).join('');
+         }
+         
+         function updateSuperSignalStats(stats) {
+             document.getElementById('totalSignals').textContent = stats.total_signals || 0;
+             document.getElementById('todaySignals').textContent = stats.today_signals || 0;
+             document.getElementById('currentCycle').textContent = stats.current_cycle || 0;
+             
+             // Sinyal dağılımını hesapla
+             let longSignals = 0;
+             if (stats.signal_distribution) {
+                 longSignals = (stats.signal_distribution.C20L || 0) + (stats.signal_distribution.M5L || 0);
+             }
+             document.getElementById('longSignals').textContent = longSignals;
+         }
+         
+                   function resetSuperSignalScanButton() {
+              const scanBtn = document.getElementById('superScanBtn');
+              const stopBtn = document.getElementById('superStopBtn');
+              const loadingSpinner = document.getElementById('superLoadingSpinner');
+              
+              isScanning = false;
+              scanBtn.disabled = false;
+              scanBtn.style.display = 'block';
+              stopBtn.style.display = 'none';
+              loadingSpinner.style.display = 'none';
+          }
+          
+          // Pro Signal Scanner Functions
+          function startProSignalScan() {
+              if (isScanning) return;
+              
+              const maxCoins = document.getElementById('proMaxCoins').value;
+              const scanBtn = document.getElementById('proScanBtn');
+              const stopBtn = document.getElementById('proStopBtn');
+              const loadingSpinner = document.getElementById('proLoadingSpinner');
+              
+              // UI'yi güncelle
+              isScanning = true;
+              scanBtn.disabled = true;
+              scanBtn.style.display = 'none';
+              stopBtn.style.display = 'block';
+              loadingSpinner.style.display = 'block';
+              
+              // API çağrısı
+              fetch(`/api/scan/pro_signal?max_coins=${maxCoins}`)
+                  .then(response => response.json())
+                  .then(data => {
+                      if (data.status === 'success') {
+                          checkProSignalResults();
+                      } else {
+                          alert('Hata: ' + data.message);
+                          resetProSignalScanButton();
+                      }
+                  })
+                  .catch(error => {
+                      console.error('Hata:', error);
+                      alert('Tarama başlatılırken hata oluştu!');
+                      resetProSignalScanButton();
+                  });
+          }
+          
+          function stopProSignalScan() {
+              fetch('/api/scan/pro_signal/stop')
+                  .then(response => response.json())
+                  .then(data => {
+                      if (data.status === 'success') {
+                          resetProSignalScanButton();
+                          alert('Pro Signal taraması durduruldu!');
+                      } else {
+                          alert('Hata: ' + data.message);
+                      }
+                  })
+                  .catch(error => {
+                      console.error('Hata:', error);
+                      alert('Durdurma işlemi başarısız!');
+                  });
+          }
+          
+          function checkProSignalResults() {
+              fetch('/api/results/pro_signal')
+                  .then(response => response.json())
+                  .then(data => {
+                      updateProSignalResults(data.signals);
+                      updateProSignalStats(data.statistics);
+                      
+                      if (data.is_running) {
+                          setTimeout(checkProSignalResults, 5000); // Her 5 saniyede bir güncelle
+                      } else {
+                          resetProSignalScanButton();
+                      }
+                  })
+                  .catch(error => {
+                      console.error('Hata:', error);
+                      resetProSignalScanButton();
+                  });
+          }
+          
+          function updateProSignalResults(signals) {
+              const tbody = document.getElementById('proResultsTable');
+              
+              if (signals.length === 0) {
+                  tbody.innerHTML = `
+                      <tr>
+                          <td colspan="12" class="text-center text-muted py-4">
+                              <i class="fas fa-exclamation-triangle"></i> Henüz sinyal bulunamadı
+                          </td>
+                      </tr>
+                  `;
+                  return;
+              }
+              
+              tbody.innerHTML = signals.map(signal => {
+                  const categoryClass = signal.signal_category === 'MEGA SIGNAL' ? 'text-danger fw-bold' : 
+                                       signal.signal_category === 'PRO SIGNAL' ? 'text-warning fw-bold' :
+                                       signal.signal_category === 'STANDARD SIGNAL' ? 'text-primary' : 'text-muted';
+                  
+                  const categoryIcon = signal.signal_category === 'MEGA SIGNAL' ? '👑' : 
+                                      signal.signal_category === 'PRO SIGNAL' ? '⭐' :
+                                      signal.signal_category === 'STANDARD SIGNAL' ? '📊' : '⚠️';
+                  
+                  const signalClass = signal.signal_type === 'LONG' ? 'text-success' : 'text-danger';
+                  const signalIcon = signal.signal_type === 'LONG' ? '📈' : '📉';
+                  
+                  const scoreClass = signal.signal_score >= 9 ? 'text-danger fw-bold' :
+                                   signal.signal_score >= 7 ? 'text-warning fw-bold' :
+                                   signal.signal_score >= 5 ? 'text-primary' : 'text-muted';
+                  
+                  // EMA ratio hesapla
+                  const emaRatio = signal.ema200 ? ((signal.entry_price - signal.ema200) / signal.ema200 * 100) : 0;
+                  
+                  // Volatilite seviyesi belirle
+                  const volatilityLevel = signal.volatility >= 8 ? 'HIGH' : signal.volatility >= 4 ? 'MEDIUM' : 'LOW';
+                  
+                  return `
+                      <tr>
+                          <td><strong>${signal.symbol || 'N/A'}</strong></td>
+                          <td class="${categoryClass}">${categoryIcon} ${signal.signal_category || 'N/A'}</td>
+                          <td class="${scoreClass}">${signal.signal_score || 0}/10</td>
+                          <td class="${emaRatio >= 0 ? 'positive-ratio' : 'negative-ratio'}">${emaRatio.toFixed(2)}%</td>
+                          <td>${signal.rsi ? signal.rsi.toFixed(2) : 'N/A'}</td>
+                          <td>${signal.macd ? signal.macd.toFixed(6) : 'N/A'}</td>
+                          <td>
+                              <small>
+                                  <span class="text-success">5m</span> |
+                                  <span class="text-muted">15m</span> |
+                                  <span class="text-muted">1h</span>
+                              </small>
+                          </td>
+                          <td><span class="badge ${volatilityLevel === 'HIGH' ? 'bg-danger' : volatilityLevel === 'MEDIUM' ? 'bg-warning' : 'bg-success'}">${volatilityLevel}</span></td>
+                          <td>${signal.volatility ? (signal.volatility * 2).toFixed(1) : 'N/A'}</td>
+                          <td class="${signalClass}">${signalIcon} ${signal.signal_type || 'N/A'}</td>
+                          <td>$${signal.entry_price ? signal.entry_price.toFixed(6) : 'N/A'}</td>
+                          <td>${signal.timestamp ? new Date(signal.timestamp).toLocaleString('tr-TR') : 'N/A'}</td>
+                      </tr>
+                  `;
+              }).join('');
+          }
+          
+          function updateProSignalStats(stats) {
+              document.getElementById('proTotalSignals').textContent = stats.total_signals || 0;
+              document.getElementById('proTodaySignals').textContent = stats.today_signals || 0;
+              document.getElementById('proCurrentCycle').textContent = stats.current_cycle || 0;
+              document.getElementById('proMegaSignals').textContent = stats.category_distribution?.['MEGA SIGNAL'] || 0;
+              document.getElementById('proProSignals').textContent = stats.category_distribution?.['PRO SIGNAL'] || 0;
+              document.getElementById('proAvgScore').textContent = stats.avg_score || 0;
+          }
+          
+                     function resetProSignalScanButton() {
+               const scanBtn = document.getElementById('proScanBtn');
+               const stopBtn = document.getElementById('proStopBtn');
+               const loadingSpinner = document.getElementById('proLoadingSpinner');
+               
+               isScanning = false;
+               scanBtn.disabled = false;
+               scanBtn.style.display = 'block';
+               stopBtn.style.display = 'none';
+               loadingSpinner.style.display = 'none';
+           }
+           
+           // Live Test Functions
+                       function startLiveTest() {
+                if (isScanning) return;
+                
+                const maxCoins = document.getElementById('liveMaxCoins').value;
+                const maxTrades = document.getElementById('liveMaxTrades').value;
+                const testBtn = document.getElementById('liveTestBtn');
+                const stopBtn = document.getElementById('liveStopBtn');
+                const loadingSpinner = document.getElementById('liveLoadingSpinner');
+                
+                // UI'yi güncelle
+                isScanning = true;
+                testBtn.disabled = true;
+                testBtn.style.display = 'none';
+                stopBtn.style.display = 'block';
+                loadingSpinner.style.display = 'block';
+                
+                // API çağrısı
+                fetch(`/api/scan/live_test?max_coins=${maxCoins}&max_trades=${maxTrades}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            checkLiveTestResults();
+                        } else {
+                            alert('Hata: ' + data.message);
+                            resetLiveTestButton();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Hata:', error);
+                        alert('Live Test başlatılırken hata oluştu!');
+                        resetLiveTestButton();
+                    });
+            }
+           
+           function stopLiveTest() {
+               fetch('/api/scan/live_test/stop')
+                   .then(response => response.json())
+                   .then(data => {
+                       if (data.status === 'success') {
+                           resetLiveTestButton();
+                           alert('Live Test durduruldu!');
+                       } else {
+                           alert('Hata: ' + data.message);
+                       }
+                   })
+                   .catch(error => {
+                       console.error('Hata:', error);
+                       alert('Durdurma işlemi başarısız!');
+                   });
+           }
+           
+           function checkLiveTestResults() {
+               fetch('/api/results/live_test')
+                   .then(response => response.json())
+                   .then(data => {
+                       updateLiveTestResults(data.active_trades, data.completed_trades);
+                       updateLiveTestStats(data.performance);
+                       
+                       if (data.is_running) {
+                           setTimeout(checkLiveTestResults, 5000); // Her 5 saniyede bir güncelle
+                       } else {
+                           resetLiveTestButton();
+                       }
+                   })
+                   .catch(error => {
+                       console.error('Hata:', error);
+                       resetLiveTestButton();
+                   });
+           }
+           
+           function updateLiveTestResults(activeTrades, completedTrades) {
+               // Aktif işlemler tablosunu güncelle
+               const activeTbody = document.getElementById('liveActiveTable');
+               
+               if (activeTrades.length === 0) {
+                   activeTbody.innerHTML = `
+                       <tr>
+                           <td colspan="8" class="text-center text-muted py-4">
+                               <i class="fas fa-info-circle"></i> Henüz aktif işlem yok
+                           </td>
+                       </tr>
+                   `;
+               } else {
+                   activeTbody.innerHTML = activeTrades.map(trade => {
+                       const categoryClass = trade.signal_category === 'MEGA SIGNAL' ? 'text-danger fw-bold' : 
+                                            trade.signal_category === 'PRO SIGNAL' ? 'text-warning fw-bold' : 'text-primary';
+                       
+                       const categoryIcon = trade.signal_category === 'MEGA SIGNAL' ? '👑' : 
+                                           trade.signal_category === 'PRO SIGNAL' ? '⭐' : '📊';
+                       
+                       const signalClass = trade.signal_type === 'LONG' ? 'text-success' : 'text-danger';
+                       const signalIcon = trade.signal_type === 'LONG' ? '📈' : '📉';
+                       
+                       const duration = Math.floor((new Date() - new Date(trade.entry_time)) / 60000);
+                       
+                       return `
+                           <tr>
+                               <td><strong>${trade.symbol}</strong></td>
+                               <td class="${categoryClass}">${categoryIcon} ${trade.signal_category}</td>
+                               <td>${trade.signal_score}/10</td>
+                               <td class="${signalClass}">${signalIcon} ${trade.signal_type}</td>
+                               <td>$${trade.entry_price?.toFixed(6) || 'N/A'}</td>
+                               <td>$${trade.stop_loss?.toFixed(6) || 'N/A'}</td>
+                               <td>$${trade.take_profit?.toFixed(6) || 'N/A'}</td>
+                               <td>${duration} dk</td>
+                           </tr>
+                       `;
+                   }).join('');
+               }
+               
+               // Tamamlanan işlemler tablosunu güncelle
+               const completedTbody = document.getElementById('liveCompletedTable');
+               
+               if (completedTrades.length === 0) {
+                   completedTbody.innerHTML = `
+                       <tr>
+                           <td colspan="11" class="text-center text-muted py-4">
+                               <i class="fas fa-info-circle"></i> Henüz tamamlanan işlem yok
+                           </td>
+                       </tr>
+                   `;
+               } else {
+                   completedTbody.innerHTML = completedTrades.map(trade => {
+                       const categoryClass = trade.signal_category === 'MEGA SIGNAL' ? 'text-danger fw-bold' : 
+                                            trade.signal_category === 'PRO SIGNAL' ? 'text-warning fw-bold' : 'text-primary';
+                       
+                       const categoryIcon = trade.signal_category === 'MEGA SIGNAL' ? '👑' : 
+                                           trade.signal_category === 'PRO SIGNAL' ? '⭐' : '📊';
+                       
+                       const signalClass = trade.signal_type === 'LONG' ? 'text-success' : 'text-danger';
+                       const signalIcon = trade.signal_type === 'LONG' ? '📈' : '📉';
+                       
+                       const pnlClass = trade.pnl >= 0 ? 'text-success' : 'text-danger';
+                       const pnlIcon = trade.pnl >= 0 ? '📈' : '📉';
+                       
+                       const exitReasonClass = trade.exit_reason === 'TAKE_PROFIT' ? 'text-success' : 
+                                              trade.exit_reason === 'STOP_LOSS' ? 'text-danger' : 'text-warning';
+                       
+                       return `
+                           <tr>
+                               <td><strong>${trade.symbol}</strong></td>
+                               <td class="${categoryClass}">${categoryIcon} ${trade.signal_category}</td>
+                               <td>${trade.signal_score}/10</td>
+                               <td class="${signalClass}">${signalIcon} ${trade.signal_type}</td>
+                               <td>$${trade.entry_price?.toFixed(6) || 'N/A'}</td>
+                               <td>$${trade.exit_price?.toFixed(6) || 'N/A'}</td>
+                               <td class="${pnlClass}">${pnlIcon} ${trade.pnl?.toFixed(2) || 'N/A'} USDT</td>
+                               <td class="${pnlClass}">${trade.pnl_percentage?.toFixed(2) || 'N/A'}%</td>
+                               <td><span class="badge ${exitReasonClass === 'text-success' ? 'bg-success' : exitReasonClass === 'text-danger' ? 'bg-danger' : 'bg-warning'}">${trade.exit_reason}</span></td>
+                               <td>${trade.duration_minutes || 0} dk</td>
+                               <td>${new Date(trade.exit_time).toLocaleString('tr-TR')}</td>
+                           </tr>
+                       `;
+                   }).join('');
+               }
+           }
+           
+           function updateLiveTestStats(performance) {
+               const metrics = performance.metrics || {};
+               
+               document.getElementById('liveTotalTrades').textContent = metrics.total_trades || 0;
+               document.getElementById('liveWinRate').textContent = `${metrics.win_rate || 0}%`;
+               document.getElementById('liveTotalPnl').textContent = `${metrics.total_pnl || 0} USDT`;
+               document.getElementById('liveMegaPnl').textContent = `${metrics.mega_signals_pnl || 0}%`;
+               document.getElementById('liveProPnl').textContent = `${metrics.pro_signals_pnl || 0}%`;
+               document.getElementById('liveActiveTrades').textContent = performance.active_trades_count || 0;
+           }
+           
+           function resetLiveTestButton() {
+               const testBtn = document.getElementById('liveTestBtn');
+               const stopBtn = document.getElementById('liveStopBtn');
+               const loadingSpinner = document.getElementById('liveLoadingSpinner');
+               
+               isScanning = false;
+               testBtn.disabled = false;
+               testBtn.style.display = 'block';
+               stopBtn.style.display = 'none';
+               loadingSpinner.style.display = 'none';
+           }
+           
+           // Live Trading Functions
+           function startLiveTrading() {
+               if (isScanning) return;
+               
+               const maxCoins = document.getElementById('liveTradingMaxCoins').value;
+               const maxTrades = document.getElementById('liveTradingMaxTrades').value;
+               const tradingBtn = document.getElementById('liveTradingBtn');
+               const stopBtn = document.getElementById('liveTradingStopBtn');
+               const loadingSpinner = document.getElementById('liveTradingLoadingSpinner');
+               
+               // UI'yi güncelle
+               isScanning = true;
+               tradingBtn.disabled = true;
+               tradingBtn.style.display = 'none';
+               stopBtn.style.display = 'block';
+               loadingSpinner.style.display = 'block';
+               
+               // API çağrısı
+               fetch(`/api/scan/live_trading?max_coins=${maxCoins}&max_trades=${maxTrades}`)
+                   .then(response => response.json())
+                   .then(data => {
+                       if (data.status === 'success') {
+                           checkLiveTradingResults();
+                       } else {
+                           alert('Hata: ' + data.message);
+                           resetLiveTradingButton();
+                       }
+                   })
+                   .catch(error => {
+                       console.error('Hata:', error);
+                       alert('Live Trading başlatılırken hata oluştu!');
+                       resetLiveTradingButton();
+                   });
+           }
+           
+           function stopLiveTrading() {
+               fetch('/api/scan/live_trading/stop')
+                   .then(response => response.json())
+                   .then(data => {
+                       if (data.status === 'success') {
+                           resetLiveTradingButton();
+                           alert('Live Trading durduruldu!');
+                       } else {
+                           alert('Hata: ' + data.message);
+                       }
+                   })
+                   .catch(error => {
+                       console.error('Hata:', error);
+                       alert('Durdurma işlemi başarısız!');
+                   });
+           }
+           
+           function checkLiveTradingResults() {
+               fetch('/api/results/live_trading')
+                   .then(response => response.json())
+                   .then(data => {
+                       updateLiveTradingResults(data.active_trades, data.completed_trades);
+                       updateLiveTradingStats(data.performance);
+                       
+                       if (data.is_running) {
+                           setTimeout(checkLiveTradingResults, 5000); // Her 5 saniyede bir güncelle
+                       } else {
+                           resetLiveTradingButton();
+                       }
+                   })
+                   .catch(error => {
+                       console.error('Hata:', error);
+                       resetLiveTradingButton();
+                   });
+           }
+           
+           function updateLiveTradingResults(activeTrades, completedTrades) {
+               // Aktif işlemler tablosunu güncelle
+               const activeTbody = document.getElementById('liveTradingActiveTable');
+               
+               if (activeTrades.length === 0) {
+                   activeTbody.innerHTML = `
+                       <tr>
+                           <td colspan="8" class="text-center text-muted py-4">
+                               <i class="fas fa-info-circle"></i> Henüz aktif işlem yok
+                           </td>
+                       </tr>
+                   `;
+               } else {
+                   activeTbody.innerHTML = activeTrades.map(trade => {
+                       const categoryClass = trade.signal_category === 'MEGA SIGNAL' ? 'text-danger fw-bold' : 
+                                            trade.signal_category === 'PRO SIGNAL' ? 'text-warning fw-bold' : 'text-primary';
+                       
+                       const categoryIcon = trade.signal_category === 'MEGA SIGNAL' ? '👑' : 
+                                           trade.signal_category === 'PRO SIGNAL' ? '⭐' : '📊';
+                       
+                       const signalClass = trade.signal_type === 'LONG' ? 'text-success' : 'text-danger';
+                       const signalIcon = trade.signal_type === 'LONG' ? '📈' : '📉';
+                       
+                       const duration = Math.floor((new Date() - new Date(trade.entry_time)) / 60000);
+                       
+                       return `
+                           <tr>
+                               <td><strong>${trade.symbol}</strong></td>
+                               <td class="${categoryClass}">${categoryIcon} ${trade.signal_category}</td>
+                               <td>${trade.signal_score}/10</td>
+                               <td class="${signalClass}">${signalIcon} ${trade.signal_type}</td>
+                               <td>$${trade.entry_price?.toFixed(6) || 'N/A'}</td>
+                               <td>$${trade.stop_loss?.toFixed(6) || 'N/A'}</td>
+                               <td>$${trade.take_profit?.toFixed(6) || 'N/A'}</td>
+                               <td>${duration} dk</td>
+                           </tr>
+                       `;
+                   }).join('');
+               }
+               
+               // Tamamlanan işlemler tablosunu güncelle
+               const completedTbody = document.getElementById('liveTradingCompletedTable');
+               
+               if (completedTrades.length === 0) {
+                   completedTbody.innerHTML = `
+                       <tr>
+                           <td colspan="11" class="text-center text-muted py-4">
+                               <i class="fas fa-info-circle"></i> Henüz tamamlanan işlem yok
+                           </td>
+                       </tr>
+                   `;
+               } else {
+                   completedTbody.innerHTML = completedTrades.map(trade => {
+                       const categoryClass = trade.signal_category === 'MEGA SIGNAL' ? 'text-danger fw-bold' : 
+                                            trade.signal_category === 'PRO SIGNAL' ? 'text-warning fw-bold' : 'text-primary';
+                       
+                       const categoryIcon = trade.signal_category === 'MEGA SIGNAL' ? '👑' : 
+                                           trade.signal_category === 'PRO SIGNAL' ? '⭐' : '📊';
+                       
+                       const signalClass = trade.signal_type === 'LONG' ? 'text-success' : 'text-danger';
+                       const signalIcon = trade.signal_type === 'LONG' ? '📈' : '📉';
+                       
+                       const pnlClass = trade.pnl >= 0 ? 'text-success' : 'text-danger';
+                       const pnlIcon = trade.pnl >= 0 ? '📈' : '📉';
+                       
+                       const exitReasonClass = trade.exit_reason === 'TAKE_PROFIT' ? 'text-success' : 
+                                              trade.exit_reason === 'STOP_LOSS' ? 'text-danger' : 'text-warning';
+                       
+                       return `
+                           <tr>
+                               <td><strong>${trade.symbol}</strong></td>
+                               <td class="${categoryClass}">${categoryIcon} ${trade.signal_category}</td>
+                               <td>${trade.signal_score}/10</td>
+                               <td class="${signalClass}">${signalIcon} ${trade.signal_type}</td>
+                               <td>$${trade.entry_price?.toFixed(6) || 'N/A'}</td>
+                               <td>$${trade.exit_price?.toFixed(6) || 'N/A'}</td>
+                               <td class="${pnlClass}">${pnlIcon} ${trade.pnl?.toFixed(2) || 'N/A'} USDT</td>
+                               <td class="${pnlClass}">${trade.pnl_percentage?.toFixed(2) || 'N/A'}%</td>
+                               <td><span class="badge ${exitReasonClass === 'text-success' ? 'bg-success' : exitReasonClass === 'text-danger' ? 'bg-danger' : 'bg-warning'}">${trade.exit_reason}</span></td>
+                               <td>${trade.duration_minutes || 0} dk</td>
+                               <td>${new Date(trade.exit_time).toLocaleString('tr-TR')}</td>
+                           </tr>
+                       `;
+                   }).join('');
+               }
+           }
+           
+           function updateLiveTradingStats(performance) {
+               const metrics = performance.metrics || {};
+               const futuresAccount = performance.futures_account || {};
+               const riskManagement = performance.risk_management || {};
+               const dailyTracking = performance.daily_tracking || {};
+               
+               // Temel metrikler
+               document.getElementById('liveTradingTotalTrades').textContent = metrics.total_trades || 0;
+               document.getElementById('liveTradingWinRate').textContent = `${metrics.win_rate || 0}%`;
+               document.getElementById('liveTradingTotalPnl').textContent = `${metrics.total_pnl || 0} USDT`;
+               document.getElementById('liveTradingMegaPnl').textContent = `${metrics.mega_signals_pnl || 0}%`;
+               document.getElementById('liveTradingProPnl').textContent = `${metrics.pro_signals_pnl || 0}%`;
+               document.getElementById('liveTradingActiveTrades').textContent = performance.active_trades_count || 0;
+               
+               // Futures hesap bilgilerini göster (eğer varsa)
+               if (futuresAccount.total_balance !== undefined) {
+                   console.log('Futures Hesap Bilgileri:', {
+                       'Toplam Bakiye': `${futuresAccount.total_balance} USDT`,
+                       'Kullanılabilir Bakiye': `${futuresAccount.available_balance} USDT`,
+                       'Gerçekleşmemiş PnL': `${futuresAccount.total_unrealized_pnl} USDT`,
+                       'Aktif Pozisyon Sayısı': futuresAccount.position_count
+                   });
+               }
+               
+               // Günlük takip bilgilerini göster
+               if (dailyTracking.daily_pnl !== undefined) {
+                   console.log('Günlük Takip:', {
+                       'Günlük PnL': `${dailyTracking.daily_pnl} USDT`,
+                       'Günlük İşlem Sayısı': dailyTracking.daily_trades,
+                       'Son Sıfırlama': dailyTracking.last_reset_date
+                   });
+               }
+               
+               // Risk yönetimi bilgilerini göster
+               if (riskManagement.futures_balance !== undefined) {
+                   console.log('Risk Yönetimi:', {
+                       'Futures Bakiyesi': `${riskManagement.futures_balance} USDT`,
+                       'İşlem Başına Risk': `%${riskManagement.risk_per_trade}`,
+                       'Günlük Maksimum Risk': `%${riskManagement.max_risk_per_day}`,
+                       'Kaldıraç': `${riskManagement.leverage}x`,
+                       'Margin Tipi': riskManagement.margin_type,
+                       'Min Pozisyon': `${riskManagement.min_position_value} USDT`,
+                       'Max Pozisyon': `${riskManagement.max_position_value} USDT`
+                   });
+               }
+           }
+           
+           function resetLiveTradingButton() {
+               const tradingBtn = document.getElementById('liveTradingBtn');
+               const stopBtn = document.getElementById('liveTradingStopBtn');
+               const loadingSpinner = document.getElementById('liveTradingLoadingSpinner');
+               
+               isScanning = false;
+               tradingBtn.disabled = false;
+               tradingBtn.style.display = 'block';
+               stopBtn.style.display = 'none';
+               loadingSpinner.style.display = 'none';
+           }
+           
+           // Futures Kasa Yönetimi Fonksiyonları
+           function saveFuturesSettings() {
+               const settings = {
+                   futures_balance: parseFloat(document.getElementById('futuresBalance').value),
+                   risk_per_trade: parseFloat(document.getElementById('riskPerTrade').value) / 100,
+                   max_risk_per_day: parseFloat(document.getElementById('maxRiskPerDay').value) / 100,
+                   leverage: parseInt(document.getElementById('leverage').value),
+                   margin_type: document.getElementById('marginType').value,
+                   min_position_value: parseFloat(document.getElementById('minPositionValue').value),
+                   max_position_value: parseFloat(document.getElementById('maxPositionValue').value),
+                   auto_adjust_leverage: document.getElementById('autoAdjustLeverage').checked,
+                   use_trailing_stop: document.getElementById('useTrailingStop').checked,
+                   trailing_stop_distance: parseFloat(document.getElementById('trailingStopDistance').value) / 100
+               };
+               
+               // LocalStorage'a kaydet
+               localStorage.setItem('futuresSettings', JSON.stringify(settings));
+               
+               // API'ye gönder (gelecekte backend'e kaydetmek için)
+               console.log('Futures ayarları kaydedildi:', settings);
+               
+               // Kullanıcıya bildir
+               showNotification('Futures ayarları başarıyla kaydedildi!', 'success');
+           }
+           
+           function loadFuturesSettings() {
+               const savedSettings = localStorage.getItem('futuresSettings');
+               if (savedSettings) {
+                   const settings = JSON.parse(savedSettings);
+                   
+                   document.getElementById('futuresBalance').value = settings.futures_balance || 1000;
+                   document.getElementById('riskPerTrade').value = (settings.risk_per_trade || 0.02) * 100;
+                   document.getElementById('maxRiskPerDay').value = (settings.max_risk_per_day || 0.1) * 100;
+                   document.getElementById('leverage').value = settings.leverage || 10;
+                   document.getElementById('marginType').value = settings.margin_type || 'ISOLATED';
+                   document.getElementById('minPositionValue').value = settings.min_position_value || 10;
+                   document.getElementById('maxPositionValue').value = settings.max_position_value || 100;
+                   document.getElementById('autoAdjustLeverage').checked = settings.auto_adjust_leverage !== false;
+                   document.getElementById('useTrailingStop').checked = settings.use_trailing_stop || false;
+                   document.getElementById('trailingStopDistance').value = (settings.trailing_stop_distance || 0.02) * 100;
+                   
+                   showNotification('Futures ayarları yüklendi!', 'info');
+               } else {
+                   showNotification('Kaydedilmiş ayar bulunamadı!', 'warning');
+               }
+           }
+           
+           function showNotification(message, type = 'info') {
+               // Basit bildirim sistemi
+               let alertClass = 'info';
+               if (type === 'success') alertClass = 'success';
+               else if (type === 'warning') alertClass = 'warning';
+               else if (type === 'error') alertClass = 'danger';
+               
+               const notification = document.createElement('div');
+               notification.className = `alert alert-${alertClass} alert-dismissible fade show position-fixed`;
+               notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+               notification.innerHTML = `
+                   ${message}
+                   <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+               `;
+               
+               document.body.appendChild(notification);
+               
+               // 3 saniye sonra otomatik kaldır
+               setTimeout(() => {
+                   if (notification.parentNode) {
+                       notification.remove();
+                   }
+               }, 3000);
+           }
+           
+           // Test İşlemleri Fonksiyonları
+           function testManualTrade() {
+               const symbol = document.getElementById('testSymbol').value;
+               const signalType = document.getElementById('testSignalType').value;
+               
+               showNotification(`Test işlemi açılıyor: ${symbol} ${signalType}...`, 'info');
+               
+               fetch('/api/live-trading/test-trade', {
+                   method: 'POST',
+                   headers: {
+                       'Content-Type': 'application/json',
+                   },
+                   body: JSON.stringify({
+                       symbol: symbol,
+                       signal_type: signalType
+                   })
+               })
+               .then(response => response.json())
+               .then(data => {
+                   if (data.status === 'success') {
+                       showNotification(`Test işlemi başarıyla açıldı: ${symbol} ${signalType}`, 'success');
+                       // Aktif işlemleri yenile
+                       setTimeout(() => {
+                           updateLiveTradingTables();
+                       }, 1000);
+                   } else {
+                       showNotification(`Test işlemi hatası: ${data.message}`, 'error');
+                   }
+               })
+               .catch(error => {
+                   console.error('Test işlemi hatası:', error);
+                   showNotification('Test işlemi açılırken hata oluştu!', 'error');
+               });
+           }
+           
+           function closeAllTrades() {
+               if (!confirm('Tüm aktif işlemleri kapatmak istediğinizden emin misiniz?')) {
+                   return;
+               }
+               
+               showNotification('Tüm işlemler kapatılıyor...', 'warning');
+               
+               fetch('/api/live-trading/close-all-trades', {
+                   method: 'POST',
+                   headers: {
+                       'Content-Type': 'application/json',
+                   }
+               })
+               .then(response => response.json())
+               .then(data => {
+                   if (data.status === 'success') {
+                       showNotification(`Toplam ${data.closed_count} işlem kapatıldı!`, 'success');
+                       // Tabloları yenile
+                       setTimeout(() => {
+                           updateLiveTradingTables();
+                       }, 1000);
+                   } else {
+                       showNotification(`İşlem kapatma hatası: ${data.message}`, 'error');
+                   }
+               })
+               .catch(error => {
+                   console.error('İşlem kapatma hatası:', error);
+                   showNotification('İşlemler kapatılırken hata oluştu!', 'error');
+               });
+           }
+           
+           // Sayfa yüklendiğinde ayarları yükle
+           document.addEventListener('DOMContentLoaded', function() {
+               loadFuturesSettings();
+           });
+           
+           // Futures Bakiye Yönetimi Fonksiyonları
+           function refreshFuturesBalance() {
+               fetch('/api/futures/balance')
+                   .then(response => response.json())
+                   .then(data => {
+                       if (data.status === 'success') {
+                           updateFuturesBalanceDisplay(data.account_info);
+                           showNotification('Bakiye bilgileri güncellendi!', 'success');
+                       } else {
+                           showNotification('Bakiye güncellenirken hata: ' + data.message, 'error');
+                       }
+                   })
+                   .catch(error => {
+                       console.error('Bakiye güncelleme hatası:', error);
+                       showNotification('Bakiye güncellenirken hata oluştu!', 'error');
+                   });
+           }
+           
+           function updateFuturesBalanceDisplay(accountInfo) {
+               // Bakiye bilgilerini güncelle
+               document.getElementById('futuresTotalBalance').textContent = 
+                   (accountInfo.total_balance || 0).toFixed(2);
+               document.getElementById('futuresAvailableBalance').textContent = 
+                   (accountInfo.available_balance || 0).toFixed(2);
+               document.getElementById('futuresMarginBalance').textContent = 
+                   (accountInfo.total_margin_balance || 0).toFixed(2);
+               document.getElementById('futuresPositionCount').textContent = 
+                   accountInfo.position_count || 0;
+               
+               // Gerçekleşmemiş PnL'i güncelle
+               const unrealizedPnl = accountInfo.total_unrealized_pnl || 0;
+               document.getElementById('futuresUnrealizedPnl').textContent = 
+                   unrealizedPnl.toFixed(2);
+               
+               // PnL rengini ayarla
+               const pnlCard = document.getElementById('futuresUnrealizedPnlCard');
+               if (unrealizedPnl > 0) {
+                   pnlCard.className = 'stats-card bg-success text-white';
+               } else if (unrealizedPnl < 0) {
+                   pnlCard.className = 'stats-card bg-danger text-white';
+               } else {
+                   pnlCard.className = 'stats-card bg-secondary text-white';
+               }
+               
+               // Son güncelleme zamanını göster
+               const updateTime = accountInfo.last_update ? 
+                   new Date(accountInfo.last_update).toLocaleTimeString('tr-TR') : '--';
+               document.getElementById('balanceUpdateTime').textContent = 
+                   `Son güncelleme: ${updateTime}`;
+           }
+           
+           function startFuturesBalanceAutoUpdate() {
+               // Her 30 saniyede bir bakiye güncelle
+               setInterval(() => {
+                   if (document.getElementById('live_trading-page').style.display !== 'none') {
+                       refreshFuturesBalance();
+                   }
+               }, 30000);
+           }
+           
+           // Live Trading sayfası açıldığında bakiye güncellemesini başlat
+           function showModule(moduleName) {
+               // Mevcut showModule fonksiyonunu çağır
+               const pages = document.querySelectorAll('.page-content');
+               pages.forEach(page => page.style.display = 'none');
+               
+               const selectedPage = document.getElementById(moduleName + '-page');
+               if (selectedPage) {
+                   selectedPage.style.display = 'block';
+                   
+                   // Live Trading sayfası açıldığında bakiye bilgilerini güncelle
+                   if (moduleName === 'live_trading') {
+                       refreshFuturesBalance();
+                   }
+               }
+               
+               // Aktif modülü güncelle
+               const navLinks = document.querySelectorAll('.nav-link');
+               navLinks.forEach(link => link.classList.remove('active'));
+               
+               const activeLink = document.querySelector(`[data-module="${moduleName}"]`);
+               if (activeLink) {
+                   activeLink.classList.add('active');
+               }
+           }
+           
+           // Sayfa yüklendiğinde otomatik bakiye güncellemesini başlat
+           document.addEventListener('DOMContentLoaded', function() {
+               loadFuturesSettings();
+               startFuturesBalanceAutoUpdate();
+           });
+    </script>
+</body>
+</html>
