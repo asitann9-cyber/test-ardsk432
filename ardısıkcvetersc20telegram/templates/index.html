@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔗 Ardışık Mum + C-Signal + Ters Momentum Analiz Sistemi</title>
+  
+  <!-- External Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/tr.min.js"></script>
+  
+  <!-- Styles - CSS kodları ayrı dosyada olacak -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+  <div class="container">
+    <!-- Main Header -->
+    <div class="main-header">
+      <h1 class="main-title">
+        <span>🚨</span>
+        Ardışık Mum + C-Signal + Ters Momentum Analiz Sistemi
+      </h1>
+      <p class="main-subtitle">
+        Binance Vadeli İşlemler - Ardışık Long/Short Mum + C-Signal + TERS MOMENTUM TESPİTİ
+      </p>
+    </div>
+
+    <!-- Symbol Management Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>💰</span>
+          Emtia Yönetimi
+        </div>
+      </div>
+      
+      <div class="controls-grid">
+        <div class="form-group">
+          <label class="form-label">🔍 Mevcut Emtialar</label>
+          <select id="available-symbols" multiple size="6" style="height: 150px;">
+            <option disabled>Yükleniyor...</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">✅ Seçili Emtialarım</label>
+          <div id="selected-symbols-list" style="height: 150px; overflow-y: auto; background: var(--darker-bg); border: 2px solid var(--border-color); border-radius: 8px; padding: 10px;">
+            <div style="color: var(--text-muted); font-style: italic;">Henüz emtia seçilmedi</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="btn-group">
+        <button id="add-symbols" class="btn btn-success">
+          <span>➕</span>
+          Seçili Emtiaları Ekle
+        </button>
+        <button id="select-all" class="btn btn-warning">
+          <span>📊</span>
+          Tümünü Seç
+        </button>
+        <button id="refresh-symbols" class="btn btn-info">
+          <span>🔄</span>
+          Listeyi Yenile
+        </button>
+        <button id="clear-symbols" class="btn btn-danger">
+          <span>🗑️</span>
+          Tümünü Temizle
+        </button>
+      </div>
+      
+      <div class="status-message status-info" id="symbol-status">
+        📊 Emtia listesi yükleniyor...
+      </div>
+    </div>
+
+    <!-- Analysis Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>🔗</span>
+          Ardışık Mum Analizi
+        </div>
+      </div>
+      
+      <div class="controls-grid">
+        <div class="form-group">
+          <label class="form-label">⏰ Timeframe</label>
+          <select id="timeframe">
+            <option value="1m">1 Dakika</option>
+            <option value="5m">5 Dakika</option>
+            <option value="15m">15 Dakika</option>
+            <option value="30m">30 Dakika</option>
+            <option value="1h">1 Saat</option>
+            <option value="2h">2 Saat</option>
+            <option value="4h" selected>4 Saat</option>
+            <option value="1d">1 Gün</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">🎯 İşlem</label>
+          <button id="start-analysis" class="btn btn-primary">
+            <span>🚀</span>
+            Analiz Başlat
+          </button>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">⏹️ Durdur</label>
+          <button id="stop-auto-update" class="btn btn-danger" disabled>
+            <span>⏹️</span>
+            Durdur
+          </button>
+        </div>
+      </div>
+      
+      <div class="status-message status-info" id="analysis-status">
+        📊 Analiz için butona tıklayın
+      </div>
+    </div>
+
+    <!-- Results Section - Normal Analiz -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>📈</span>
+          Analiz Sonuçları - Ardışık Mum Yapıları
+        </div>
+      </div>
+      
+      <!-- Filter Buttons -->
+      <div class="filter-buttons" style="margin-bottom: 15px; display: flex; gap: 5px; flex-wrap: wrap; align-items: center;">
+        <button id="filter-all" class="btn-filter active">
+          📊 HEPSİ
+        </button>
+        <button id="filter-long" class="btn-filter">
+          🟢 LONG
+        </button>
+        <button id="filter-short" class="btn-filter">
+          🔴 SHORT
+        </button>
+        <button id="filter-high-count" class="btn-filter">
+          🔥 5+ ARDIŞIK
+        </button>
+        <div style="margin-left: auto; font-size: 12px; color: var(--text-muted); display: flex; align-items: center;">
+          <span id="filter-count">0 sonuç</span>
+        </div>
+      </div>
+      
+      <div style="max-height: 600px; overflow-y: auto; background: var(--darker-bg); border-radius: 8px; border: 2px solid var(--border-color);">
+        <table id="consecutive-results-table">
+          <thead>
+            <tr>
+              <th>Sıra</th>
+              <th>Sembol</th>
+              <th>Fiyat</th>
+              <th>Ardışık Tür</th>
+              <th>Ardışık Sayı</th>
+              <th>Değişim %</th>
+              <th>Güncelleme</th>
+            </tr>
+          </thead>
+          <tbody id="consecutive-results-tbody">
+            <tr>
+              <td colspan="7" style="padding: 20px; text-align: center; color: var(--text-muted);">
+                📊 Analiz sonuçları burada görünecek
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Permanent High Consecutive Section -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>🏆</span>
+          Kalıcı 5+ Ardışık Emtialar - Hall of Fame + Ters Momentum
+        </div>
+        <div class="btn-group">
+          <button id="refresh-permanent" class="btn btn-info">
+            <span>🔄</span>
+            Yenile
+          </button>
+          <button id="clear-permanent" class="btn btn-danger">
+            <span>🗑️</span>
+            Temizle
+          </button>
+        </div>
+      </div>
+      
+      <!-- TERS MOMENTUM ALERTS -->
+      <div id="reverse-momentum-alerts" class="reverse-momentum-alerts">
+        <div class="reverse-alert-title">
+          <span>🚨</span>
+          TERS MOMENTUM ALARMLARI
+          <span id="reverse-momentum-count" style="background: var(--reverse-momentum-color); color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;">0</span>
+        </div>
+        <div id="reverse-alert-content">
+          <!-- Ters momentum uyarıları buraya gelecek -->
+        </div>
+      </div>
+      
+      <div class="status-message status-info" id="permanent-status">
+        🏆 5+ ardışık olan emtialar + Her güncellemede C-Signal + Ters momentum tespiti
+      </div>
+      
+      <div style="max-height: 500px; overflow-y: auto; background: var(--darker-bg); border-radius: 8px; border: 2px solid var(--border-color);">
+        <table id="permanent-results-table">
+          <thead>
+            <tr>
+              <th>Sıra</th>
+              <th>Sembol</th>
+              <th>İlk Kayıt</th>
+              <th>Max Ardışık</th>
+              <th>Max Tür</th>
+              <th>Max Değişim %</th>
+              <th>Timeframe</th>
+              <th>C-Signal (Güncelleme)</th>
+              <th>🚨 Ters Momentum</th>
+            </tr>
+          </thead>
+          <tbody id="permanent-results-tbody">
+            <tr>
+              <td colspan="9" style="padding: 20px; text-align: center; color: var(--text-muted);">
+                🏆 Henüz 5+ ardışık olan emtia yok
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript dosyası ayrı olacak -->
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
