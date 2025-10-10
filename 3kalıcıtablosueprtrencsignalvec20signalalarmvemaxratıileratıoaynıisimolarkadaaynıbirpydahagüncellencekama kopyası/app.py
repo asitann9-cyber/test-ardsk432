@@ -4,6 +4,8 @@ Supertrend + C-Signal Analiz Sistemi
 Ana Flask Uygulaması - Clean Architecture Implementation
 🆕 YENİ: Dinamik C-Signal Threshold - Panel'den Ayarlanabilir ±X L/S Sinyal Tespiti
 ✅ FIX: Kalıcı tabloda güncel ratio gösterimi
+📱 TELEGRAM: C-Signal Alert Bildirimleri Aktif!
+🔍 DEBUG: Detaylı Telegram gönderim logları eklendi
 """
 import pandas as pd
 import logging
@@ -225,11 +227,50 @@ def register_routes(app, analysis_service, memory_storage, binance_service, tele
                                 'tradingview_link': updated_symbol.get('tradingview_link', '#')
                             })
                 
-                # 🆕 C-Signal alertleri logla
+                # 🆕 C-Signal alertleri logla VE TELEGRAM'A GÖNDER (DEBUG LOGLU)
                 if c_signal_alerts:
                     logger.info(f"🔔 {len(c_signal_alerts)} yeni C-Signal alert bulundu! (Threshold: ±{c_signal_threshold})")
                     for alert in c_signal_alerts:
                         logger.info(f"   📍 {alert['symbol']}: {alert['signal_type']} - C={alert['c_signal_value']:.2f}")
+                        
+                        # 🔍 DEBUG: Telegram gönderim süreci başlıyor
+                        logger.info(f"🔍 DEBUG: {alert['symbol']} için Telegram kontrolü başladı")
+                        
+                        # 📱 TELEGRAM BİLDİRİMİ GÖNDER
+                        permanent_symbol = memory_storage.get_permanent_symbol(alert['symbol'])
+                        
+                        if permanent_symbol:
+                            logger.info(f"🔍 DEBUG: permanent_symbol bulundu: {permanent_symbol.get('symbol')}")
+                            logger.info(f"🔍 DEBUG: last_c_signal_alert_time: {permanent_symbol.get('last_c_signal_alert_time')}")
+                            
+                            spam_check = telegram_service.should_send_c_signal_alert(permanent_symbol)
+                            logger.info(f"🔍 DEBUG: Spam kontrolü sonucu: {spam_check}")
+                            
+                            if spam_check:
+                                logger.info(f"📱 Telegram API çağrısı yapılıyor: {alert['symbol']}")
+                                
+                                success = telegram_service.send_c_signal_alert(
+                                    symbol=alert['symbol'],
+                                    signal_type=alert['signal_type'],
+                                    c_signal_value=alert['c_signal_value'],
+                                    tradingview_link=alert['tradingview_link'],
+                                    threshold=c_signal_threshold
+                                )
+                                
+                                logger.info(f"🔍 DEBUG: Telegram API yanıtı: {success}")
+                                
+                                if success:
+                                    memory_storage.update_permanent_symbol(alert['symbol'], {
+                                        'last_c_signal_alert_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                                    })
+                                    memory_storage.increment_c_signal_alerts()
+                                    logger.info(f"✅ {alert['symbol']} için Telegram C-Signal bildirimi gönderildi")
+                                else:
+                                    logger.error(f"❌ {alert['symbol']} Telegram gönderimi BAŞARISIZ!")
+                            else:
+                                logger.warning(f"⏳ {alert['symbol']} spam kontrolünden GEÇEMEDİ - Son alert: {permanent_symbol.get('last_c_signal_alert_time')}")
+                        else:
+                            logger.error(f"❌ {alert['symbol']} kalıcı listede BULUNAMADI!")
                 
                 # Sonuçları formatla
                 formatted_results = []
@@ -337,7 +378,6 @@ def register_routes(app, analysis_service, memory_storage, binance_service, tele
         except Exception as e:
             logger.error(f"Kalıcı liste API hatası: {e}")
             return jsonify({"success": False, "error": str(e)}), 500
-
     @app.route('/api/consecutive/clear-permanent', methods=['POST'])
     def clear_permanent_high_ratio():
         """Kalıcı %100+ ratio listesini temizle"""
@@ -779,7 +819,6 @@ def register_routes(app, analysis_service, memory_storage, binance_service, tele
     def internal_error(error):
         logger.error(f"İnternal server hatası: {error}")
         return jsonify({"success": False, "error": "Sunucu hatası"}), 500
-
 def main():
     """Ana uygulama başlatma fonksiyonu"""
     try:
@@ -804,6 +843,8 @@ def main():
         print("   ⚙️ Panel Üzerinden Ayarlanabilir Ratio Threshold")
         print("   🆕 DİNAMİK C-Signal Threshold - Panel'den ±X Ayarlanabilir!")
         print("   🔔 C-Signal ±X L/S Sinyal Tespiti - Tabloda Gösterim")
+        print("   📱 TELEGRAM C-Signal Alert Bildirimleri AKTİF!")
+        print("   🔍 DEBUG: Detaylı Telegram gönderim logları aktif!")
         print("   ✅ Kalıcı Tabloda Güncel Ratio Gösterimi")
         print("="*70)
         print("📈 SUPERTREND ANALİZİ:")
@@ -833,9 +874,18 @@ def main():
         print("   • Threshold değiştiğinde otomatik yeniden değerlendirme")
         print("="*70)
         print("📱 TELEGRAM BİLDİRİMLERİ:")
-        print("   • Manuel trend değiştirme bildirimleri")
-        print("   • C-Signal L/S bildirimleri (YAKINDA)")
+        print("   • Manuel trend değiştirme bildirimleri ✅")
+        print("   • C-Signal L/S bildirimleri ✅ AKTİF!")
         print("   • Spam önleme (5 dakika minimum interval)")
+        print("   • TradingView linki ile birlikte gönderilir")
+        print("   • 🔍 DEBUG modda çalışıyor - Tüm adımlar loglanıyor")
+        print("="*70)
+        print("🔍 DEBUG MODU AKTİF:")
+        print("   • Telegram kontrolü adımları detaylı loglanıyor")
+        print("   • permanent_symbol durumu kontrol ediliyor")
+        print("   • Spam önleme mekanizması izleniyor")
+        print("   • Telegram API yanıtları loglanıyor")
+        print("   • Başarılı/başarısız gönderimler kaydediliyor")
         print("="*70)
         print("🌐 Panel erişim: http://127.0.0.1:5001")
         print("⚠️  Sadece analiz amaçlıdır, yatırım tavsiyesi değildir!")

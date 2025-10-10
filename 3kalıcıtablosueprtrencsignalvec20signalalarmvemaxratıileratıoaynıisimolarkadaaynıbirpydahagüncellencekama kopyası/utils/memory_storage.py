@@ -3,6 +3,7 @@ Memory Storage Service
 Bellekte veri depolama ve yönetim işlemleri
 🆕 YENİ: Dinamik C-Signal ±X Threshold - Panel'den Ayarlanabilir L/S Sinyal Tespiti
 ✅ FIX: max_ratio_percent → ratio_percent isim değişikliği
+🐛 BUG FIX: last_c_signal_alert_time spam önleme sorunu düzeltildi
 """
 
 import logging
@@ -116,7 +117,7 @@ class MemoryStorage:
                 # 🆕 C-SIGNAL TARİHÇE ALANLARI
                 'last_c_signal_value': None,
                 'last_c_signal_type': None,
-                'last_c_signal_alert_time': None,
+                'last_c_signal_alert_time': None,  # ✅ Sadece Telegram gönderimi sonrası güncellenecek
                 'c_signal_history': []
             }
             
@@ -155,7 +156,20 @@ class MemoryStorage:
     
     def get_permanent_symbol(self, symbol: str) -> Optional[Dict[str, Any]]:
         """Belirli kalıcı sembolü getir"""
-        return next((s for s in self.permanent_high_ratio if s['symbol'] == symbol), None)
+        perm_symbol = next((s for s in self.permanent_high_ratio if s['symbol'] == symbol), None)
+        
+        # ✅ Eksik C-Signal alanlarını otomatik ekle (backward compatibility)
+        if perm_symbol:
+            if 'last_c_signal_alert_time' not in perm_symbol:
+                perm_symbol['last_c_signal_alert_time'] = None
+            if 'last_c_signal_value' not in perm_symbol:
+                perm_symbol['last_c_signal_value'] = None
+            if 'last_c_signal_type' not in perm_symbol:
+                perm_symbol['last_c_signal_type'] = None
+            if 'c_signal_history' not in perm_symbol:
+                perm_symbol['c_signal_history'] = []
+                
+        return perm_symbol
     
     def update_permanent_symbol(self, symbol: str, update_data: Dict[str, Any]) -> bool:
         """Kalıcı sembol verisini güncelle"""
@@ -172,6 +186,9 @@ class MemoryStorage:
     def update_c_signal(self, symbol: str, c_signal_value: Optional[float]) -> Dict[str, Any]:
         """
         C-Signal değerini güncelle ve DİNAMİK THRESHOLD kontrolü yap
+        
+        🐛 BUG FIX: last_c_signal_alert_time burada GÜNCELLENMİYOR!
+        Sadece Telegram başarıyla gönderildiğinde app.py'de güncellenecek.
         
         Args:
             symbol (str): Sembol adı
@@ -222,9 +239,11 @@ class MemoryStorage:
         # Son C-Signal değerini kaydet
         permanent_symbol['last_c_signal_value'] = c_signal_value
         
+        # ✅ DÜZELTME: last_c_signal_alert_time BURADA GÜNCELLENMİYOR!
+        # Sadece Telegram başarıyla gönderildiğinde app.py'de güncellenecek
         if signal_result['signal_triggered']:
             permanent_symbol['last_c_signal_type'] = signal_result['signal_type']
-            permanent_symbol['last_c_signal_alert_time'] = current_time
+            # ❌ SİLİNDİ: permanent_symbol['last_c_signal_alert_time'] = current_time
             logger.info(f"🔔 {symbol} C-Signal ALERT: {signal_result['signal_type']} - Değer: {c_signal_value:.2f}")
         
         return signal_result
@@ -395,7 +414,6 @@ class MemoryStorage:
             return True
         
         return False
-    
     def is_manual_type_overridden(self, symbol: str) -> bool:
         """Sembol manuel olarak değiştirilmiş mi kontrol et"""
         permanent_symbol = self.get_permanent_symbol(symbol)

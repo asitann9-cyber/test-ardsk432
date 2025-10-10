@@ -1,6 +1,7 @@
 """
 Telegram Bot servisleri
 Telegram API ile mesaj gönderme
+🆕 YENİ: C-Signal Alert Bildirimleri
 """
 
 import os
@@ -190,6 +191,68 @@ class TelegramService:
             logger.error(f"Manuel tür değişikliği bildirimi hatası: {e}")
             return False
     
+    # 🆕 C-SIGNAL ALERT BİLDİRİMİ
+    def send_c_signal_alert(self, symbol: str, signal_type: str, c_signal_value: float, 
+                           tradingview_link: str, threshold: float) -> bool:
+        """
+        C-Signal alert bildirimi gönder
+        
+        Args:
+            symbol (str): Sembol adı
+            signal_type (str): Sinyal tipi ('L' = LONG, 'S' = SHORT)
+            c_signal_value (float): C-Signal değeri
+            tradingview_link (str): TradingView linki
+            threshold (float): Kullanılan threshold değeri
+            
+        Returns:
+            bool: Bildirim başarıyla gönderildi ise True
+        """
+        if not self.is_configured():
+            return False
+        
+        try:
+            current_time = datetime.now().strftime('%H:%M:%S')
+            
+            # Sinyal tipine göre emoji ve mesaj
+            if signal_type == 'L':
+                signal_emoji = "🟢"
+                signal_name = "LONG"
+                signal_description = f"C-Signal <b>+{threshold:.0f}</b> eşiğini geçti!"
+            elif signal_type == 'S':
+                signal_emoji = "🔴"
+                signal_name = "SHORT"
+                signal_description = f"C-Signal <b>-{threshold:.0f}</b> eşiğini geçti!"
+            else:
+                signal_emoji = "⚪"
+                signal_name = "UNKNOWN"
+                signal_description = "Bilinmeyen sinyal"
+            
+            message = f"""
+🔔 <b>C-SIGNAL ALERT!</b> 🔔
+
+{signal_emoji} <b>{symbol}</b> - {signal_name}
+📊 C-Signal Değeri: <b>{c_signal_value:+.2f}</b>
+🎯 Threshold: <b>±{threshold:.0f}</b>
+⏰ Saat: <b>{current_time}</b>
+
+💡 {signal_description}
+
+<a href="{tradingview_link}">📊 TradingView'da İncele</a>
+
+#CSignalAlert #{symbol} #{signal_name}
+            """.strip()
+            
+            success = self.send_message(message)
+            
+            if success:
+                logger.info(f"📱 C-Signal alert gönderildi: {symbol} - {signal_name} (C={c_signal_value:+.2f})")
+            
+            return success
+            
+        except Exception as e:
+            logger.error(f"C-Signal alert bildirimi hatası: {e}")
+            return False
+    
     def should_send_alert(self, symbol_data: Dict[str, Any], min_interval_minutes: int = 5) -> bool:
         """
         Bildirim gönderilmeli mi kontrol et (spam önleme)
@@ -213,3 +276,30 @@ class TelegramService:
                 pass  # Tarih parse hatası durumunda bildirimi gönder
         
         return True
+    
+    # 🆕 C-SIGNAL İÇİN ÖZEL SPAM ÖNLEME
+    def should_send_c_signal_alert(self, symbol_data: Dict[str, Any], min_interval_minutes: int = 5) -> bool:
+        """
+        C-Signal alert gönderilmeli mi kontrol et (spam önleme)
+        
+        Args:
+            symbol_data (Dict[str, Any]): Sembol verileri
+            min_interval_minutes (int): Minimum bekleme süresi (dakika)
+            
+        Returns:
+            bool: C-Signal alert gönderilmeli ise True
+        """
+        # Son C-Signal alert zamanını kontrol et
+        last_c_signal_alert = symbol_data.get('last_c_signal_alert_time')
+        if last_c_signal_alert:
+            try:
+                last_alert_time = datetime.strptime(last_c_signal_alert, '%Y-%m-%d %H:%M:%S')
+                time_diff = datetime.now() - last_alert_time
+                if time_diff.total_seconds() < (min_interval_minutes * 60):
+                    logger.debug(f"⏳ {symbol_data.get('symbol')} C-Signal spam önleme: {time_diff.total_seconds():.0f}s < {min_interval_minutes*60}s")
+                    return False
+            except Exception:
+                pass  # Tarih parse hatası durumunda bildirimi gönder
+        
+        return True
+    
