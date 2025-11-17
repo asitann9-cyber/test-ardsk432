@@ -1,0 +1,150 @@
+# Flask ve Web Framework
+Flask==2.3.3
+Werkzeug==2.3.7
+
+# HTTP İstekleri
+requests==2.31.0
+urllib3==2.0.7
+
+# Veri İşleme
+pandas==2.0.3
+numpy==1.24.3
+
+# Matematik ve İstatistik
+scipy==1.11.4
+
+# TA-Lib - SUPERTREND HESAPLAMALARI İÇİN EKLENDİ
+TA-Lib==0.4.28
+
+# Konfigürasyon Yönetimi
+python-dotenv==1.0.0
+
+# Logging (built-in logging modülü kullanılıyor ama gelişmiş logging için)
+colorlog==6.7.0
+
+# Paralel İşleme (built-in concurrent.futures kullanılıyor)
+# concurrent.futures - Python 3.2+ ile birlikte gelir
+
+# Tarih ve Zaman İşlemleri (built-in datetime kullanılıyor)
+# datetime - Python ile birlikte gelir
+
+# JSON İşlemleri (built-in json kullanılıyor)
+# json - Python ile birlikte gelir
+
+# Development ve Test Araçları (opsiyonel)
+pytest==7.4.3
+pytest-flask==1.3.0
+pytest-cov==4.1.0
+black==23.11.0
+flake8==6.1.0
+
+# Production WSGI Server (opsiyonel - production için)
+gunicorn==21.2.0
+waitress==2.1.2
+
+# Güvenlik (opsiyonel - production için)
+flask-talisman==1.1.0
+
+# Monitoring (opsiyonel)
+psutil==5.9.6
+
+# Excel dosya işleme (gelecekte gerekirse)
+openpyxl==3.1.2
+xlsxwriter==3.1.9
+
+# CSV işleme (built-in csv modülü kullanılıyor)
+# csv - Python ile birlikte gelir
+
+# Environment Variables
+python-decouple==3.8
+
+# Type Hints Support (Python 3.5+ için)
+typing-extensions==4.8.0
+
+# Memory profiling (development için opsiyonel)
+memory-profiler==0.61.0
+
+# Performance monitoring (opsiyonel)
+py-spy==0.3.14
+
+# Error tracking (production için opsiyonel)
+sentry-sdk[flask]==1.38.0
+
+# Rate limiting (gelecekte API rate limiting için)
+flask-limiter==3.5.0
+
+# CORS support (gelecekte frontend ayrıştırılırsa)
+flask-cors==4.0.0
+
+# SSL/TLS support (production için)
+pyOpenSSL==23.3.0
+cryptography==41.0.8
+
+# Time zone handling (built-in datetime kullanılıyor ama gelişmiş için)
+pytz==2023.3.post1
+
+# Validation (gelecekte API validation için)
+marshmallow==3.20.1
+cerberus==1.3.4
+
+# Caching (gelecekte cache layer için)
+flask-caching==2.1.0
+redis==5.0.1
+
+# Database (gelecekte database integration için)
+SQLAlchemy==2.0.23
+flask-sqlalchemy==3.1.1
+alembic==1.12.1
+
+# Message Queue (gelecekte async işleme için)
+celery==5.3.4
+
+# Email notifications (gelecekte email bildirimleri için)
+flask-mail==0.9.1
+
+# Admin panel (gelecekte admin interface için)
+flask-admin==1.6.1
+
+# API documentation (gelecekte API docs için)
+flask-restx==1.2.0
+flasgger==0.9.7.1
+
+# Health checks
+flask-healthz==0.0.3
+
+# Configuration management
+dynaconf==3.2.4
+
+# Retry mechanism
+tenacity==8.2.3
+
+# Progress bars (CLI için)
+tqdm==4.66.1
+
+# Rich text terminal output
+rich==13.7.0
+
+# Click CLI framework (gelecekte CLI tools için)
+click==8.1.7
+
+# Schedule jobs (gelecekte scheduled tasks için)
+apscheduler==3.10.4
+
+# System information
+platform-info==3.3.0
+
+# Network utilities
+netifaces==0.11.0
+
+# File system utilities
+watchdog==3.0.0
+
+# Compression utilities
+lz4==4.3.2
+zstandard==0.22.0
+
+# Backup utilities (gelecekte backup için)
+python-dotenv==1.0.0
+
+websocket-client==1.6.2
+flask-sock
