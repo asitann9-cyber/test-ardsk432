@@ -1,0 +1,421 @@
+"""
+🔧 Kripto AI Sistemi - Konfigürasyon Dosyası - VPMV Sistemi
+🔥 SADECE 4 BİLEŞEN: Volume, Price, Momentum, Volatility
+🔥 MTF KALDIRILDI - TIME Alignment KALDIRILDI
+🔥 BOT: Testnet (Sabit) | VERİ: Mainnet/Testnet (Seçilebilir)
+"""
+
+import os
+import pytz
+import logging
+import requests
+from dotenv import load_dotenv
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
+# .ENV DOSYASI YÜKLE
+load_dotenv()
+
+# =============================================================================
+# TEMEL AYARLAR
+# =============================================================================
+
+LOCAL_TZ = pytz.timezone("Europe/Istanbul")
+DEFAULT_TIMEFRAME = "15m"
+LIMIT = 500 
+SYMBOL_LIMIT = None  
+
+# =============================================================================
+# ENVIRONMENT AYARLARI - İKİ AYRI SİSTEM
+# =============================================================================
+
+# 🤖 BOT için SABİT TESTNET (Gerçek para riski yok)
+BOT_ENVIRONMENT = 'testnet'
+BINANCE_API_KEY = os.getenv('BINANCE_API_KEY')
+BINANCE_SECRET_KEY = os.getenv('BINANCE_SECRET_KEY')
+
+# 📊 VERİ ÇEKME için SEÇİLEBİLİR (Mainnet veya Testnet)
+# .env'den okunuyor, varsayılan: mainnet
+DATA_ENVIRONMENT = os.getenv('DATA_ENVIRONMENT', 'mainnet')  # mainnet veya testnet
+
+# Geriye uyumluluk için (live_trader.py için)
+ENVIRONMENT = BOT_ENVIRONMENT
+
+# =============================================================================
+# LIVE TRADING AYARLARI (TESTNET)
+# =============================================================================
+
+LIVE_TRADING_ACTIVE = False
+INITIAL_CAPITAL = 1000.0  # USDT (sadece referans için)
+MAX_OPEN_POSITIONS = 1
+STOP_LOSS_PCT = 0.01  
+TAKE_PROFIT_PCT = 0.02 
+SCAN_INTERVAL = 1  # saniye
+
+# Risk Yönetimi
+MAX_POSITION_SIZE_PCT = 100  
+MIN_ORDER_SIZE = 10  # Minimum order büyüklüğü (USDT)
+
+# =============================================================================
+# VPMV PARAMETRELERİ - SADECE 4 BİLEŞEN
+# =============================================================================
+
+# SuperTrend Parametreleri
+SUPERTREND_PARAMS = {
+    'atr_period': 10,      # ATR periyodu
+    'multiplier': 3.0      # ATR çarpanı
+}
+
+# VPMV Bileşen Ağırlıkları (SADECE 4 BİLEŞEN)
+VPMV_WEIGHTS = {
+    'price': 0.7,          # %70 - En yüksek ağırlık
+    'volume': 0.1,         # %10
+    'momentum': 0.1,       # %10
+    'volatility': 0.1      # %10
+}
+
+# Tetikleyici Eşikleri (SADECE 4 BİLEŞEN)
+TRIGGER_THRESHOLDS = {
+    'price': 20,           # Price component >= 20
+    'momentum': 10,        # Momentum component >= 10
+    'volume': 15,          # Volume component >= 15
+    'volatility': 8        # Volatility component >= 8
+}
+
+# Filtreleme Parametreleri
+DEFAULT_MIN_VPMV_SCORE = 10.0        # Minimum VPMV skoru
+DEFAULT_MIN_AI_SCORE = 0.3           # Minimum AI skoru (0-1)
+
+# AI Model Parametreleri
+AI_PARAMS = {
+    'model_type': 'random_forest_regressor',
+    'retrain_interval': 50,
+    'min_data_for_training': 20,
+    'target_profit_threshold': 1.0,
+    'ml_weight': 0.6,      # ML model ağırlığı
+    'manual_weight': 0.4   # Manuel skor ağırlığı
+}
+
+# =============================================================================
+# DOSYA YOLLARI
+# =============================================================================
+
+TRADES_CSV = 'ai_crypto_trades.csv'
+CAPITAL_CSV = 'ai_crypto_capital.csv'
+AI_MODEL_FILE = 'crypto_vpmv_ai_model.pkl'
+
+# =============================================================================
+# API AYARLARI - İKİ AYRI URL SETİ
+# =============================================================================
+
+MAX_WORKERS = 8           
+REQ_SLEEP = 0.05          
+TIMEOUT = 10
+AUTO_REFRESH_INTERVAL = 1
+
+# 🤖 BOT için TESTNET URL'leri (Sabit)
+BOT_BASE = "https://testnet.binancefuture.com"
+BOT_WS_BASE = "wss://fstream.binancefuture.com"
+
+# 📊 VERİ ÇEKME için URL'ler (Seçilebilir) - GLOBAL DEĞİŞKEN
+DATA_BASE = ""
+DATA_WS_BASE = ""
+
+# İlk başlatma
+if DATA_ENVIRONMENT == 'testnet':
+    DATA_BASE = "https://testnet.binancefuture.com"
+    DATA_WS_BASE = "wss://fstream.binancefuture.com"
+else:  # mainnet
+    DATA_BASE = "https://fapi.binance.com"
+    DATA_WS_BASE = "wss://fstream.binance.com"
+
+# Geriye uyumluluk için (live_trader.py için)
+BASE = BOT_BASE
+WS_BASE = BOT_WS_BASE
+
+# Veri çekme endpoint'leri (DATA_BASE kullanır) - GLOBAL DEĞİŞKEN
+EXCHANGE_INFO = ""
+KLINES = ""
+TICKER_PRICE = ""
+
+# İlk başlatma
+EXCHANGE_INFO = f"{DATA_BASE}/fapi/v1/exchangeInfo"
+KLINES = f"{DATA_BASE}/fapi/v1/klines"
+TICKER_PRICE = f"{DATA_BASE}/fapi/v1/ticker/price"
+
+# =============================================================================
+# LOGGING AYARLARI
+# =============================================================================
+
+def setup_logging():
+    """Logging sistemini yapılandır"""
+    logging.basicConfig(
+        level=logging.INFO, 
+        format='%(asctime)s %(levelname)s %(message)s'
+    )
+    
+    # Dash logger'ı sustur
+    dash_logger = logging.getLogger('werkzeug')
+    dash_logger.setLevel(logging.WARNING)
+    
+    return logging.getLogger("crypto-analytics")
+
+# =============================================================================
+# HTTP SESSION AYARLARI
+# =============================================================================
+
+def create_session():
+    """Optimize edilmiş HTTP session oluştur"""
+    session = requests.Session()
+    session.headers.update({
+        "User-Agent": "crypto-analytics/2.0-vpmv"
+    })
+
+    retry = Retry(
+        total=3,
+        backoff_factor=0.3,  
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["GET"],
+    )
+    
+    adapter = HTTPAdapter(
+        pool_connections=100, 
+        pool_maxsize=100, 
+        max_retries=retry
+    )
+    
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+    
+    return session
+
+# =============================================================================
+# UI AYARLARI
+# =============================================================================
+
+# Dash uygulama ayarları
+DASH_CONFIG = {
+    'debug': False,
+    'host': "127.0.0.1",
+    'port': 8050,
+    'title': "🤖 AI Crypto Analytics - VPMV System (4 Components) + Live Trading"
+}
+
+# Tablo güncelleme aralığı (ms)
+TABLE_REFRESH_INTERVAL = 1000
+
+# =============================================================================
+# TRADING DEĞİŞKENLERİ - SADECE LIVE TRADING
+# =============================================================================
+
+# Live Trading Değişkenleri  
+live_capital = 0.0
+live_positions = {}
+live_trading_active = False
+
+# ⚠️ GEÇICI: App.py uyumluluğu için - KULLANILMAYACAK
+# Bu attributelar sadece app.py'nin hata vermemesi için
+paper_capital = 0.0  # KULLANILMAZ - sadece compatibility
+paper_positions = {}  # KULLANILMAZ - sadece compatibility
+
+# Genel sistem değişkenleri
+auto_scan_active = False
+current_data = None
+current_settings = {
+    'timeframe': DEFAULT_TIMEFRAME,
+    'min_vpmv_score': DEFAULT_MIN_VPMV_SCORE,
+    'min_ai': DEFAULT_MIN_AI_SCORE * 100
+}
+saved_signals = {}
+
+# =============================================================================
+# VERİ KAYNAĞINI DEĞİŞTİRME FONKSİYONU
+# =============================================================================
+
+def switch_data_source(source: str):
+    """
+    🔥 DÜZELTME: Veri kaynağını değiştir (mainnet/testnet)
+    Global değişkenleri günceller
+    
+    Args:
+        source: 'mainnet' veya 'testnet'
+        
+    Returns:
+        bool: Başarılı mı?
+    """
+    global DATA_ENVIRONMENT, DATA_BASE, DATA_WS_BASE
+    global EXCHANGE_INFO, KLINES, TICKER_PRICE
+    
+    logger = logging.getLogger("crypto-analytics")
+    
+    if source not in ['mainnet', 'testnet']:
+        logger.error(f"❌ Geçersiz veri kaynağı: {source}")
+        return False
+    
+    # Değişiklik yoksa geç
+    if DATA_ENVIRONMENT == source:
+        logger.debug(f"ℹ️ Veri kaynağı zaten {source}")
+        return True
+    
+    DATA_ENVIRONMENT = source
+    
+    if source == 'testnet':
+        DATA_BASE = "https://testnet.binancefuture.com"
+        DATA_WS_BASE = "wss://fstream.binancefuture.com"
+        logger.info("=" * 70)
+        logger.info("🧪 VERİ KAYNAĞI DEĞİŞTİRİLDİ: TESTNET")
+        logger.info("=" * 70)
+    else:  # mainnet
+        DATA_BASE = "https://fapi.binance.com"
+        DATA_WS_BASE = "wss://fstream.binance.com"
+        logger.info("=" * 70)
+        logger.info("🚀 VERİ KAYNAĞI DEĞİŞTİRİLDİ: MAINNET")
+        logger.info("=" * 70)
+    
+    # Endpoint'leri güncelle
+    EXCHANGE_INFO = f"{DATA_BASE}/fapi/v1/exchangeInfo"
+    KLINES = f"{DATA_BASE}/fapi/v1/klines"
+    TICKER_PRICE = f"{DATA_BASE}/fapi/v1/ticker/price"
+    
+    logger.info(f"📡 Veri URL güncellendi: {DATA_BASE}")
+    logger.info(f"🔗 Exchange Info: {EXCHANGE_INFO}")
+    logger.info("=" * 70)
+    
+    return True
+
+
+def get_current_data_source() -> dict:
+    """
+    🔥 YENİ: Mevcut veri kaynağı bilgilerini al
+    
+    Returns:
+        dict: Veri kaynağı bilgileri
+    """
+    return {
+        'environment': DATA_ENVIRONMENT,
+        'base_url': DATA_BASE,
+        'is_mainnet': DATA_ENVIRONMENT == 'mainnet',
+        'is_testnet': DATA_ENVIRONMENT == 'testnet',
+        'display_name': '🚀 Binance Mainnet' if DATA_ENVIRONMENT == 'mainnet' else '🧪 Binance Testnet'
+    }
+
+# =============================================================================
+# LIVE TRADING KONTROL FONKSİYONLARI
+# =============================================================================
+
+def switch_to_live_mode():
+    """Live trading moduna geç"""
+    global live_trading_active
+    live_trading_active = True
+    logging.getLogger("crypto-analytics").info("🤖 Live Trading moduna geçildi")
+
+def is_live_mode():
+    """Live trading modunda mı? - ARTIK HER ZAMAN TRUE"""
+    return True  # Sadece live trading olduğu için her zaman True
+
+def update_live_capital(new_balance: float):
+    """Live trading bakiyesini güncelle"""
+    global live_capital
+    live_capital = new_balance
+    logging.getLogger("crypto-analytics").info(f"💰 Live capital güncellendi: ${new_balance:.2f}")
+
+def update_live_positions(new_positions: dict):
+    """Live trading pozisyonlarını güncelle"""
+    global live_positions
+    live_positions = new_positions
+    logging.getLogger("crypto-analytics").debug(f"📊 Live positions güncellendi: {len(new_positions)} pozisyon")
+
+def get_live_trading_summary():
+    """Live Trading özetini döndür"""
+    return {
+        'capital': live_capital,
+        'positions': len(live_positions),
+        'active': live_trading_active,
+        'symbols': list(live_positions.keys())
+    }
+
+def reset_live_trading():
+    """Live trading verilerini sıfırla"""
+    global live_trading_active
+    live_trading_active = False
+    logging.getLogger("crypto-analytics").info("🔄 Live trading durduruldu")
+
+# ⚠️ GEÇICI COMPATIBILITY FONKSIYONLARI - App.py için
+def switch_to_paper_mode():
+    """Paper mode'a geç - KULLANILMAZ artık"""
+    logging.getLogger("crypto-analytics").warning("⚠️ Paper mode çağrısı - artık sadece Live Trading var!")
+    pass
+
+def reset_paper_trading():
+    """Paper trading sıfırla - KULLANILMAZ artık"""
+    logging.getLogger("crypto-analytics").warning("⚠️ Paper reset çağrısı - artık sadece Live Trading var!")
+    pass
+
+# =============================================================================
+# VPMV YARDIMCI FONKSİYONLAR - SADECE 4 BİLEŞEN
+# =============================================================================
+
+def get_vpmv_config() -> dict:
+    """VPMV konfigürasyonunu döndür (SADECE 4 BİLEŞEN)"""
+    return {
+        'supertrend': SUPERTREND_PARAMS,
+        'weights': VPMV_WEIGHTS,
+        'triggers': TRIGGER_THRESHOLDS,
+        'filters': {
+            'min_vpmv_score': DEFAULT_MIN_VPMV_SCORE,
+            'min_ai_score': DEFAULT_MIN_AI_SCORE
+        }
+    }
+
+def validate_vpmv_signal(vpmv_score: float, ai_score: float) -> bool:
+    """
+    VPMV sinyalinin geçerli olup olmadığını kontrol et
+    
+    Args:
+        vpmv_score: VPMV skoru
+        ai_score: AI skoru (0-100)
+        
+    Returns:
+        bool: Sinyal geçerli mi?
+    """
+    return (
+        abs(vpmv_score) >= DEFAULT_MIN_VPMV_SCORE and
+        ai_score >= (DEFAULT_MIN_AI_SCORE * 100)
+    )
+
+# =============================================================================
+# BAŞLATMA FONKSİYONU
+# =============================================================================
+
+def initialize():
+    """Sistemin temel bileşenlerini başlat"""
+    logger = setup_logging()
+    session = create_session()
+    
+    logger.info("🚀 Kripto AI Sistemi - VPMV (Volume-Price-Momentum-Volatility)")
+    logger.info("🔥 SADECE 4 BİLEŞEN: Volume, Price, Momentum, Volatility")
+    logger.info("=" * 70)
+    logger.info(f"🤖 Bot Environment: {BOT_ENVIRONMENT.upper()} (TESTNET - Sabit)")
+    logger.info(f"📊 Veri Environment: {DATA_ENVIRONMENT.upper()} (Seçilebilir)")
+    logger.info("=" * 70)
+    logger.info(f"🤖 Bot URL: {BOT_BASE}")
+    logger.info(f"📡 Veri URL: {DATA_BASE}")
+    logger.info(f"📊 Maksimum pozisyon: {MAX_OPEN_POSITIONS}")
+    logger.info(f"⏰ Tarama aralığı: {SCAN_INTERVAL} saniye")
+    logger.info("🎯 ESKİ SİSTEM KALDIRILDI: Deviso, Gauss, Z-Score")
+    logger.info("❌ MTF KALDIRILDI - TIME Alignment KALDIRILDI")
+    logger.info("🔥 YENİ SİSTEM: VPMV (4 Component) + SuperTrend")
+    
+    # VPMV config özeti
+    vpmv_cfg = get_vpmv_config()
+    logger.info(f"📈 SuperTrend: ATR={vpmv_cfg['supertrend']['atr_period']}, Mult={vpmv_cfg['supertrend']['multiplier']}")
+    logger.info(f"⚖️ VPMV Ağırlıklar: Price={vpmv_cfg['weights']['price']*100}%, Volume={vpmv_cfg['weights']['volume']*100}%, Momentum={vpmv_cfg['weights']['momentum']*100}%, Volatility={vpmv_cfg['weights']['volatility']*100}%")
+    logger.info(f"🎯 Tetikleyici Eşikler: Price>={vpmv_cfg['triggers']['price']}, Momentum>={vpmv_cfg['triggers']['momentum']}, Volume>={vpmv_cfg['triggers']['volume']}, Volatility>={vpmv_cfg['triggers']['volatility']}")
+    
+    # API key kontrolü
+    if BINANCE_API_KEY and BINANCE_SECRET_KEY:
+        logger.info("✅ Binance API anahtarları yüklendi (Testnet Bot için)")
+    else:
+        logger.warning("⚠️ Binance API anahtarları bulunamadı (.env dosyasını kontrol edin)")
+    
+    return logger, session
