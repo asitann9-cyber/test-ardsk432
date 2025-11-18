@@ -17,7 +17,7 @@ from .indicators import (
     calculate_candle_power,
     detect_htf_crossovers,
     calculate_cumulative_power,
-    detect_whale_activity,
+
     compute_consecutive_metrics,
     get_ultra_signal_summary
 )

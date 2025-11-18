@@ -1,7 +1,7 @@
 """
 📈 Teknik Göstergeler - ULTRA PANEL v5
 Multi-timeframe Heikin Ashi analizi - Pine Script %100 uyumlu
-🔥 ÖZELLIKLER: HTF crossover, Power calculation, Whale detection, Memory system
+🔥 DÜZELTME: HTF volume MA + Whale detection kaldırıldı
 """
 
 import math
@@ -114,60 +114,77 @@ def calculate_candle_power(
 
 
 # =======================================
-# HTF BAR OLUŞTURMA (Pine request.security benzeri)
+# 🔥 DÜZELTİLMİŞ HTF BAR + VOLUME MA
 # =======================================
 def get_htf_bars(df: pd.DataFrame, ha_df: pd.DataFrame, multiplier: int) -> Optional[Dict]:
     """
-    🔥 HTF bar oluştur (Pine Script request.security simülasyonu)
+    🔥 DÜZELTME: Pine Script lookahead + HTF volume MA mantığı
     
-    Pine Script: lookahead=barmerge.lookahead_on
-    → Mevcut tamamlanmamış HTF bar'ı döndürür
+    Pine Script'te:
+    - request.security(..., lookahead_on) → mevcut kapanmamış HTF bar
+    - HTF volume MA: ta.sma(volume, 20) HTF seviyesinde hesaplanır
     
     Args:
         df: Base timeframe OHLCV
         ha_df: Heikin Ashi verileri
-        multiplier: HTF çarpanı (8=4H, 12=6H, 16=8H, 24=12H)
+        multiplier: HTF çarpanı (8, 12, 16, 24)
         
     Returns:
-        Dict: {current: {...}, previous: {...}} veya None
+        Dict: {current: {...}, previous: {...}, volume_ma: float} veya None
     """
     try:
-        if len(df) < multiplier * 2:
+        if len(df) < multiplier * 3:
             return None
         
-        # ✅ MEVCUT HTF BAR (son N bar)
-        current_period = ha_df.iloc[-multiplier:]
-        current_vol_period = df.iloc[-multiplier:]
+        # ✅ CURRENT HTF BAR (son multiplier bar)
+        current_ha = ha_df.iloc[-multiplier:]
+        current_vol = df.iloc[-multiplier:]
         
-        if len(current_period) < multiplier:
+        if len(current_ha) < multiplier:
             return None
         
-        current_bar = {
-            'open': float(current_period['ha_open'].iloc[0]),
-            'close': float(current_period['ha_close'].iloc[-1]),
-            'high': float(current_period['ha_high'].max()),
-            'low': float(current_period['ha_low'].min()),
-            'volume': float(current_vol_period['volume'].sum())
+        current = {
+            'open': float(current_ha['ha_open'].iloc[0]),
+            'close': float(current_ha['ha_close'].iloc[-1]),
+            'high': float(current_ha['ha_high'].max()),
+            'low': float(current_ha['ha_low'].min()),
+            'volume': float(current_vol['volume'].sum())
         }
         
-        # ✅ ÖNCEKİ HTF BAR (ondan önceki N bar)
-        previous_period = ha_df.iloc[-multiplier*2:-multiplier]
-        previous_vol_period = df.iloc[-multiplier*2:-multiplier]
+        # ✅ PREVIOUS HTF BAR (ondan önceki multiplier bar)
+        previous_ha = ha_df.iloc[-multiplier*2:-multiplier]
+        previous_vol = df.iloc[-multiplier*2:-multiplier]
         
-        if len(previous_period) < multiplier:
+        if len(previous_ha) < multiplier:
             return None
         
-        previous_bar = {
-            'open': float(previous_period['ha_open'].iloc[0]),
-            'close': float(previous_period['ha_close'].iloc[-1]),
-            'high': float(previous_period['ha_high'].max()),
-            'low': float(previous_period['ha_low'].min()),
-            'volume': float(previous_vol_period['volume'].sum())
+        previous = {
+            'open': float(previous_ha['ha_open'].iloc[0]),
+            'close': float(previous_ha['ha_close'].iloc[-1]),
+            'high': float(previous_ha['ha_high'].max()),
+            'low': float(previous_ha['ha_low'].min()),
+            'volume': float(previous_vol['volume'].sum())
         }
+        
+        # ✅ VOLUME MA - Pine Script ta.sma(volume, 20) HTF seviyesinde
+        # Son 20 HTF period'un her birinin volume toplamını al, sonra ortala
+        htf_volumes = []
+        for i in range(20):
+            start_idx = -(multiplier * (i + 1))
+            end_idx = -(multiplier * i) if i > 0 else None
+            
+            if abs(start_idx) > len(df):
+                break
+            
+            period_vol = df.iloc[start_idx:end_idx]['volume'].sum()
+            htf_volumes.append(period_vol)
+        
+        volume_ma = np.mean(htf_volumes) if htf_volumes else current['volume']
         
         return {
-            'current': current_bar,
-            'previous': previous_bar
+            'current': current,
+            'previous': previous,
+            'volume_ma': volume_ma
         }
         
     except Exception as e:
@@ -194,7 +211,7 @@ def detect_htf_crossovers(df: pd.DataFrame, htf_multiples: List[int] = [8, 12, 1
         Dict: HTF crossover bilgileri
     """
     try:
-        if df is None or df.empty or len(df) < max(htf_multiples) * 2:
+        if df is None or df.empty or len(df) < max(htf_multiples) * 3:
             return {
                 'bull_count': 0,
                 'bear_count': 0,
@@ -212,13 +229,14 @@ def detect_htf_crossovers(df: pd.DataFrame, htf_multiples: List[int] = [8, 12, 1
         
         for mult in htf_multiples:
             try:
-                # HTF bar'ları al
-                htf_bars = get_htf_bars(df, ha_df, mult)
-                if htf_bars is None:
+                # ✅ HTF bar'ları + volume MA al
+                htf_data = get_htf_bars(df, ha_df, mult)
+                if htf_data is None:
                     continue
                 
-                current = htf_bars['current']
-                previous = htf_bars['previous']
+                current = htf_data['current']
+                previous = htf_data['previous']
+                vol_ma = htf_data['volume_ma']
                 
                 # ✅ CROSSOVER DETECTION (Pine Script ta.crossover/crossunder)
                 # ta.crossover: current close > current open AND previous close <= previous open
@@ -227,18 +245,14 @@ def detect_htf_crossovers(df: pd.DataFrame, htf_multiples: List[int] = [8, 12, 1
                 # ta.crossunder: current close < current open AND previous close >= previous open
                 bear_cross = (current['close'] < current['open']) and (previous['close'] >= previous['open'])
                 
-                # Volume MA (son 20 HTF period için)
-                vol_ma_bars = min(len(df), mult * 20)
-                vol_ma = df['volume'].tail(vol_ma_bars).mean() * mult
-                
-                # Power hesapla
+                # ✅ Power hesapla - Pine Script ile aynı
                 power, is_strong = calculate_candle_power(
                     current['high'],
                     current['low'],
                     current['open'],
                     current['close'],
                     current['volume'],
-                    vol_ma,
+                    vol_ma,  # ✅ HTF seviyesinde hesaplanmış volume MA
                     min_candle_change=3.0,
                     use_volume=True
                 )
@@ -256,8 +270,21 @@ def detect_htf_crossovers(df: pd.DataFrame, htf_multiples: List[int] = [8, 12, 1
                 
                 if bull_cross:
                     bull_count += 1
+                    logger.debug(
+                        f"✅ HTF{mult} BULL CROSS: "
+                        f"curr(c={current['close']:.6f} > o={current['open']:.6f}), "
+                        f"prev(c={previous['close']:.6f} <= o={previous['open']:.6f}), "
+                        f"power={power:.2f}"
+                    )
+                
                 if bear_cross:
                     bear_count += 1
+                    logger.debug(
+                        f"✅ HTF{mult} BEAR CROSS: "
+                        f"curr(c={current['close']:.6f} < o={current['open']:.6f}), "
+                        f"prev(c={previous['close']:.6f} >= o={previous['open']:.6f}), "
+                        f"power={power:.2f}"
+                    )
                     
             except Exception as e:
                 logger.debug(f"HTF {mult} hesaplama hatası: {e}")
@@ -339,80 +366,6 @@ def calculate_cumulative_power(htf_results: Dict) -> float:
 
 
 # =======================================
-# WHALE DETECTION
-# =======================================
-def detect_whale_activity(df: pd.DataFrame, whale_mult: float = 2.5) -> bool:
-    """
-    🔥 Ultra Panel v5 - Whale (balina) aktivitesi tespiti
-    
-    Pine Script:
-    - request.security(symbol, "D", [volume, ta.sma(volume, 50)])
-    - volume_spike = daily_vol > daily_vol_ma50 * whale_spike_mult
-    
-    Args:
-        df (pd.DataFrame): OHLCV verileri
-        whale_mult (float): Volume spike çarpanı
-        
-    Returns:
-        bool: Whale aktif mi?
-    """
-    try:
-        if df is None or df.empty or len(df) < 50:
-            return False
-        
-        # ✅ Günlük volume simülasyonu
-        # Base TF'yi bul (örnek: 1h base → 24 bar = 1 gün)
-        # Basit yaklaşım: Son 24 bar'ı günlük say (1h TF için)
-        daily_bars = 24  # 1 saatlik TF için
-        
-        # Son günlük hacim
-        daily_vol = df['volume'].tail(daily_bars).sum() if len(df) >= daily_bars else df['volume'].iloc[-1]
-        
-        # Günlük 50-period MA (her gün için 24 bar)
-        daily_periods = []
-        for i in range(50):
-            start_idx = -(daily_bars * (i + 1))
-            end_idx = -(daily_bars * i) if i > 0 else None
-            if start_idx < -len(df):
-                break
-            period_vol = df['volume'].iloc[start_idx:end_idx].sum()
-            daily_periods.append(period_vol)
-        
-        if not daily_periods:
-            return False
-        
-        daily_vol_ma50 = np.mean(daily_periods)
-        
-        # ✅ Volume spike kontrolü
-        volume_spike = daily_vol > (daily_vol_ma50 * whale_mult)
-        
-        if not volume_spike:
-            return False
-        
-        # ✅ Heikin Ashi günlük mum yönü kontrolü
-        # Son 24 bar'ı al ve HA hesapla
-        daily_df = df.tail(daily_bars)
-        ha_daily = calculate_heikin_ashi(daily_df)
-        
-        if ha_daily.empty:
-            return False
-        
-        # Günlük HA bar
-        ha_daily_open = ha_daily['ha_open'].iloc[0]
-        ha_daily_close = ha_daily['ha_close'].iloc[-1]
-        
-        # Whale buy veya sell
-        whale_buy = volume_spike and (ha_daily_close > ha_daily_open)
-        whale_sell = volume_spike and (ha_daily_close < ha_daily_open)
-        
-        return whale_buy or whale_sell
-        
-    except Exception as e:
-        logger.debug(f"Whale detection hatası: {e}")
-        return False
-
-
-# =======================================
 # MEMORY SYSTEM (Pine Script var benzeri)
 # =======================================
 def check_new_ultra_signal(symbol: str, htf_results: Dict) -> Tuple[bool, int]:
@@ -489,12 +442,12 @@ def check_new_ultra_signal(symbol: str, htf_results: Dict) -> Tuple[bool, int]:
 def compute_consecutive_metrics(df: pd.DataFrame, symbol: str = None) -> Dict:
     """
     🔥 ULTRA PANEL v5 - Ana metrik hesaplama fonksiyonu
+    🔥 DÜZELTME: Volume MA + Whale detection kaldırıldı
     
-    Pine Script Ultra Panel v5'in %100 uyumlu Python implementasyonu:
+    Pine Script Ultra Panel v5'in Python implementasyonu:
     - Multi-timeframe Heikin Ashi crossover (4H, 6H, 8H, 12H)
     - Ultra Signal detection (3/4 veya 4/4 HTF)
     - Cumulative power calculation
-    - Whale volume spike detection
     - Memory system (ta.barssince benzeri)
     
     Args:
@@ -528,22 +481,19 @@ def compute_consecutive_metrics(df: pd.DataFrame, symbol: str = None) -> Dict:
         # 🔥 CUMULATIVE POWER
         total_power = calculate_cumulative_power(htf_results)
         
-        # 🔥 WHALE DETECTION
-        whale_active = detect_whale_activity(df)
-        
         # 🔥 MEMORY SYSTEM (bars ago)
         bars_ago = 0
         if symbol:
             is_new, bars_ago = check_new_ultra_signal(symbol, htf_results)
         
-        # 🔥 RETURN ULTRA PANEL v5 METRICS
+        # 🔥 RETURN ULTRA PANEL v5 METRICS (WHALE KALDIRILDI)
         return {
             'run_type': run_type,
             'ultra_signal': ultra_signal,
             'htf_count': htf_count,
             'total_power': float(total_power),
-            'whale_active': whale_active,
-            'bars_ago': bars_ago,  # ✅ YENİ
+            'whale_active': False,  # ⚠️ Her zaman False
+            'bars_ago': bars_ago,
             'htf_details': htf_results['htf_signals']
         }
         
@@ -583,10 +533,9 @@ def get_ultra_signal_summary(df: pd.DataFrame, symbol: str = None) -> str:
         signal = metrics['ultra_signal']
         htf = metrics['htf_count']
         power = metrics['total_power']
-        whale = "🐋" if metrics['whale_active'] else ""
         bars_ago = metrics.get('bars_ago', 0)
         
-        return f"🔥 {signal} | HTF: {htf}/4 | Power: {power:.1f} | Bars ago: {bars_ago} {whale}"
+        return f"🔥 {signal} | HTF: {htf}/4 | Power: {power:.1f} | Bars ago: {bars_ago}"
         
     except Exception as e:
         return f"⚠️ Hata: {e}"
